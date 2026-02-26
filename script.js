@@ -18,21 +18,48 @@ const getLocation = () => {
 };
 
 // Функція, яка спрацює при успішному отриманні координат
-const success = (position) => {
+const success = async (position) => {
     const { latitude, longitude } = position.coords;
 
-    console.log(`Широта: ${latitude}, Довгота: ${longitude}`);
+    // Показуємо стан завантаження (можна додати клас до картки)
+    document.querySelector(".weather-card").classList.add("loading");
 
-    getWeather(latitude, longitude);
+    // Виконуємо запити (await змушує JS чекати відповіді)
+    try {
+        const [cityData, weatherData] = await Promise.all([
+            getCityName(latitude, longitude), // функція тепер має повертати назву
+            getWeather(latitude, longitude), // функція тепер має повертати дані погоди
+        ]);
 
-    // Тимчасово виведемо в заголовок міста, щоб перевірити роботу
-    // document.getElementById("city-name").innerText = `${latitude.toFixed(2)}, ${longitude.toFixed(2)}`;
+        // Коли дані прийшли — прибираємо завантаження і малюємо інтерфейс
+        renderUI(cityData, weatherData);
+    } catch (err) {
+        console.error("Помилка завантаження", err);
+    }
 };
 
 // Функція для обробки помилок (наприклад, користувач заборонив доступ)
 const error = (err) => {
     console.warn(`Помилка геолокації (${err.code}): ${err.message}`);
     document.getElementById("city-name").innerText = "Доступ заборонено";
+};
+
+const getCityName = async (lat, lon) => {
+    try {
+        const url = `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=uk`;
+
+        const response = await fetch(url);
+        const data = await response.json();
+
+        // Вибираємо найбільш логічну назву (місто або район)
+        const cityName = data.city || data.locality || "Невідомо";
+
+        // Оновлюємо заголовок в HTML
+        document.getElementById("city-name").innerText = cityName.toUpperCase();
+    } catch (err) {
+        console.error("Не вдалося отримати назву міста:", err);
+        document.getElementById("city-name").innerText = "ЛОКАЦІЯ";
+    }
 };
 
 const getWeather = async (lat, lon) => {
@@ -55,7 +82,7 @@ const getWeather = async (lat, lon) => {
         const dailyParams = ["temperature_2m_max", "temperature_2m_min", "precipitation_probability_max", "uv_index_max"].join(",");
 
         // 4. Формуємо повний URL
-        const url = `https://api.open-meteo.com/v1/forecast?latitude=50.06&longitude=14.52&current=${currentParams}&hourly=${hourlyParams}&daily=${dailyParams}&timezone=auto&forecast_days=10`;
+        const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=${currentParams}&hourly=${hourlyParams}&daily=${dailyParams}&timezone=auto&forecast_days=10`;
 
         const response = await fetch(url);
 

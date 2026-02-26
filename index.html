@@ -2,7 +2,7 @@
 <html lang="uk">
     <head>
         <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
         <title>Simple weather PWA</title>
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -14,11 +14,71 @@
     </head>
     <body>
         <div class="weather-card">
-            <p class="label">location</p>
+            <!-- TOP: час і місто -->
+            <div class="header">
+                <div class="datetime">
+                    <span id="time">11:30 am</span>
+                    <span id="date">Fri, Jan 4</span>
+                </div>
+                <p class="label">location</p>
+                <h1 id="city-name">Prague</h1>
+            </div>
 
-            <h1 id="city-name">Prague</h1>
+            <div class="spacer"></div>
 
-            <div class="temp-container"><span id="temperature">11</span><span class="unit">°C</span></div>
+            <!-- СЕРЕДИНА: температура -->
+            <div class="temp-container"><span id="temperature">22</span><span class="unit">°C</span></div>
+
+            <p class="condition">Clear and sunny</p>
+
+            <!-- НИЗ: прогноз погодинний -->
+            <div class="forecast">
+                <div class="forecast-item">
+                    <span class="f-temp">24°</span>
+                    <span class="f-icon">☀️</span>
+                    <span class="f-time">12 pm</span>
+                </div>
+                <div class="forecast-item">
+                    <span class="f-temp">25°</span>
+                    <span class="f-icon">🌤️</span>
+                    <span class="f-time">1 pm</span>
+                </div>
+                <div class="forecast-item">
+                    <span class="f-temp">24°</span>
+                    <span class="f-icon">⛅</span>
+                    <span class="f-time">2 pm</span>
+                </div>
+                <div class="forecast-item">
+                    <span class="f-temp">22°</span>
+                    <span class="f-icon">🌥️</span>
+                    <span class="f-time">3 pm</span>
+                </div>
+                <div class="forecast-item">
+                    <span class="f-temp">20°</span>
+                    <span class="f-icon">🌦️</span>
+                    <span class="f-time">4 pm</span>
+                </div>
+                <div class="forecast-item">
+                    <span class="f-temp">18°</span>
+                    <span class="f-icon">🌧️</span>
+                    <span class="f-time">5 pm</span>
+                </div>
+                <div class="forecast-item">
+                    <span class="f-temp">17°</span>
+                    <span class="f-icon">🌧️</span>
+                    <span class="f-time">6 pm</span>
+                </div>
+                <div class="forecast-item">
+                    <span class="f-temp">17°</span>
+                    <span class="f-icon">🌧️</span>
+                    <span class="f-time">6 pm</span>
+                </div>
+                <div class="forecast-item">
+                    <span class="f-temp">17°</span>
+                    <span class="f-icon">🌧️</span>
+                    <span class="f-time">6 pm</span>
+                </div>
+            </div>
         </div>
     </body>
 </html>
