@@ -1,85 +1,133 @@
-/* style.css */
-:root {
-    --bg-color: hsla(226, 100%, 66%, 1);
-    --text-color: #124b88;
+/* 1. Імпортуємо шрифти: Inter (для чисел) та Montserrat (для тексту) */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@200;700&family=Montserrat:wght@300;800&display=swap");
+
+/* 1. Визначаємо саму анімацію */
+@keyframes slideUpFade {
+    from {
+        opacity: 0;
+        transform: translateY(30px); /* Починаємо на 30px нижче */
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);    /* Повертаємо на місце */
+    }
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
 }
 
 body {
-    margin: 0;
-    padding: 0;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    background: hsla(226, 100%, 66%, 1);
-
-    background: linear-gradient(90deg, hsla(226, 100%, 66%, 1) 0%, hsla(190, 68%, 50%, 1) 100%);
-
-    background: -moz-linear-gradient(90deg, hsla(226, 100%, 66%, 1) 0%, hsla(190, 68%, 50%, 1) 100%);
-
-    background: -webkit-linear-gradient(90deg, hsla(226, 100%, 66%, 1) 0%, hsla(190, 68%, 50%, 1) 100%);
-    background-color: var(--bg-color);
-    color: var(--text-color);
-    display: flex;
-    justify-content: center;
-    align-items: flex-start; /* Починаємо зверху */
+    /* Основний шрифт - Montserrat, для чисел використаємо Inter */
+    font-family: "Montserrat", sans-serif;
+    background: #0f172a; /* Темний колір нічного неба */
+    color: #ffffff;
     height: 100vh;
-    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
 }
 
-.weather-card {
-    /* Відступ зверху враховує "чубчик" iPhone */
-    margin-top: calc(env(safe-area-inset-top) + 1rem);
-    
-}
-
-.label {
-    font-size: 1rem;
-    letter-spacing: 0.125rem; /* 2px / 16 */
-    opacity: 0.6;
-    margin-bottom: 0.25rem;
-    text-transform: uppercase;
-}
-
-h1 {
-    font-size: 1.75rem; /* 28px / 16 */
-    font-weight: 600;
-    margin: 0;
-}
-
-/* Початковий стан: невидимий і трохи нижче */
-#city-name,
-.temp-container {
-    font-size: 3rem;
-    opacity: 0;
-    transform: translateY(10px);
-    transition:
-        opacity 0.6s ease,
-        transform 0.6s ease;
-}
-
-/* Клас, який ми додамо через JS, щоб елемент "проявився" */
-.visible {
-    opacity: 1 !important;
-    transform: translateY(0) !important;
-}
-
-.temp-container {
-    font-size: 120px;
-    font-weight: 200; /* Тонкий шрифт виглядає преміально */
-    margin-top: 10px;
-}
-
-.unit {
-    font-size: 30px;
-    vertical-align: top;
-    margin-top: 15px;
-    display: inline-block;
-}
-
-.background-svg {
-    position: fixed;
+/* Градієнтний фон з ефектом глибини */
+body::before {
+    content: "";
+    position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    z-index: -1; /* Відправляємо на самий задній план */
-    pointer-events: none; /* Щоб кліки проходили крізь фон на кнопки */
+    background: radial-gradient(circle at top right, #3b82f6, transparent), radial-gradient(circle at bottom left, #1e3a8a, #0f172a);
+    z-index: -1;
+}
+
+/* 2. Призначаємо анімацію елементам */
+.weather-card > * {
+    opacity: 0; /* Спочатку ховаємо елементи */
+    animation: slideUpFade 0.8s ease-out forwards;
+}
+
+/* 3. Додаємо затримку (stagger effect), щоб вони виїжджали по черзі */
+.label { 
+    animation-delay: 0.1s; 
+}
+
+#city-name { 
+    animation-delay: 0.3s; 
+}
+
+.temp-container { 
+    animation-delay: 0.5s; 
+}
+
+.weather-card {
+    text-align: center;
+    width: 100%;
+}
+
+.label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    /* Міжлітерний інтервал додає преміальності */
+    letter-spacing: 0.4em;
+    margin-bottom: 5px;
+    font-weight: 300;
+}
+
+#city-name {
+    font-size: 2.8rem;
+    font-weight: 800; /* Жирне накреслення */
+    margin-bottom: 15px;
+    letter-spacing: 1px;
+    /* Ефект легкого світіння тексту */
+    text-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+.temp-container {
+    display: inline-flex;
+    align-items: flex-start;
+}
+
+#temperature {
+    /* Використовуємо Inter для цифр - він виглядає більш технологічно */
+    font-family: "Inter", sans-serif;
+    font-size: 9rem;
+    font-weight: 200; /* Дуже тонкий */
+    line-height: 0.9;
+    letter-spacing: -5px;
+    /* Градієнт всередині тексту (працює в Safari) */
+    background: linear-gradient(180deg, #fff 40%, rgba(255, 255, 255, 0.4) 100%);
+    /* 1. Спочатку префікс для Safari/Chrome */
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+
+    /* 2. Потім стандартна властивість, щоб VS Code не "сварився" */
+    background-clip: text;
+}
+
+.unit {
+    font-family: "Inter", sans-serif;
+    font-size: 2.5rem;
+    font-weight: 200;
+    margin-top: 10px;
+    opacity: 0.5;
+}
+
+/* Додамо декоративний елемент — розмиту пляму за текстом */
+.weather-card::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 250px;
+    height: 250px;
+    background: #60a5fa;
+    filter: blur(80px);
+    opacity: 0.2;
+    z-index: -1;
+    transform: translate(-50%, -50%);
 }

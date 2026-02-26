@@ -1,84 +1,82 @@
 "use strict";
 
-const translations = {
-    uk: { label: "ВАША ЛОКАЦІЯ", loading: "Завантаження...", error: "Помилка" },
-    en: { label: "YOUR LOCATION", loading: "Loading...", error: "Error" },
-    pl: { label: "TWOJA LOKALIZACJA", loading: "Ładowanie...", error: "Błąd" },
-    cz: { label: "VAŠE LOKACE", loading: "Stahování...", error: "Chyba" },
+const getLocation = () => {
+    // Перевіряємо, чи підтримує браузер геолокацію
+    if (!navigator.geolocation) {
+        alert("Геолокація не підтримується вашим браузером");
+        return;
+    }
+
+    // Параметри: висока точність, таймаут 10 секунд
+    const options = {
+        enableHighAccuracy: true,
+        timeout: 10000,
+    };
+
+    // Викликаємо вбудований метод
+    navigator.geolocation.getCurrentPosition(success, error, options);
 };
 
-// Визначаємо мову користувача (беремо перші дві літери, наприклад "uk" з "uk-UA")
-const userLang = navigator.language.substring(0, 2);
+// Функція, яка спрацює при успішному отриманні координат
+const success = (position) => {
+    const { latitude, longitude } = position.coords;
 
-console.log(userLang);
+    console.log(`Широта: ${latitude}, Довгота: ${longitude}`);
 
-// Вибираємо мову зі словника, або англійську за замовчуванням
-const lang = translations[userLang] || translations.en;
+    getWeather(latitude, longitude);
 
-console.log(lang);
+    // Тимчасово виведемо в заголовок міста, щоб перевірити роботу
+    // document.getElementById("city-name").innerText = `${latitude.toFixed(2)}, ${longitude.toFixed(2)}`;
+};
 
-// 1. Функція для отримання локації
-function getLocation() {
-    if (navigator.geolocation) {
-        // Запитуємо дозвіл у користувача
-        navigator.geolocation.getCurrentPosition(showPosition, showError);
-    } else {
-        document.getElementById("city-name").innerText = "Геолокація не підтримується";
-    }
-}
+// Функція для обробки помилок (наприклад, користувач заборонив доступ)
+const error = (err) => {
+    console.warn(`Помилка геолокації (${err.code}): ${err.message}`);
+    document.getElementById("city-name").innerText = "Доступ заборонено";
+};
 
-// Встановлюємо початковий текст мітки згідно з мовою системи
-document.querySelector(".label").innerText = lang.label;
-
-// 2. Коли отримали координати — запитуємо погоду
-async function showPosition(position) {
-    const lat = position.coords.latitude;
-    const lon = position.coords.longitude;
-
-    const cityEl = document.getElementById("city-name");
-    const tempEl = document.querySelector(".temp-container");
-
+const getWeather = async (lat, lon) => {
     try {
-        // 1. Отримуємо місто
-        const geoResponse = await fetch(
-            `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=${userLang}`,
-        );
-        const geoData = await geoResponse.json();
+        // 1. Поточні дані (Current)
+        const currentParams = [
+            "temperature_2m",
+            "apparent_temperature",
+            "relative_humidity_2m",
+            "precipitation",
+            "wind_speed_10m",
+            "uv_index",
+            "cloud_cover",
+        ].join(",");
 
-        // Вставляємо назву міста і показуємо його
-        cityEl.innerText = geoData.city || geoData.locality || lang.error;
-        cityEl.classList.add("visible");
+        // 2. Погодинні дані (Hourly) — додаємо те, що зникло
+        const hourlyParams = ["temperature_2m", "precipitation_probability"].join(",");
 
-        // Чекаємо 300мс для ефекту черговості (пауза між появою міста і температури)
-        await new Promise((resolve) => setTimeout(resolve, 300));
+        // 3. Щоденні дані (Daily)
+        const dailyParams = ["temperature_2m_max", "temperature_2m_min", "precipitation_probability_max", "uv_index_max"].join(",");
 
-        // 2. Отримуємо погоду
-        const weatherResponse = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`);
-        const weatherData = await weatherResponse.json();
+        // 4. Формуємо повний URL
+        const url = `https://api.open-meteo.com/v1/forecast?latitude=50.06&longitude=14.52&current=${currentParams}&hourly=${hourlyParams}&daily=${dailyParams}&timezone=auto&forecast_days=10`;
 
-        // Вставляємо температуру і показуємо її
-        document.getElementById("temperature").innerText = Math.round(weatherData.current_weather.temperature);
-        tempEl.classList.add("visible");
-    } catch (error) {
-        cityEl.innerText = lang.error;
-        cityEl.classList.add("visible");
+        const response = await fetch(url);
+
+        if (!response.ok) throw new Error("Помилка сервісу Open-Meteo");
+
+        const data = await response.json();
+
+        // Open-Meteo повертає дані у структурі data.current.temperature_2m
+        const temp = Math.round(data.current.temperature_2m);
+
+        // Оновлюємо інтерфейс
+        document.getElementById("temperature").innerText = temp;
+
+        // Оскільки Open-Meteo не дає назву міста (тільки погоду),
+        // назву "КИЇВ" поки залишимо або пізніше додамо окремий крок для неї.
+        console.log("Дані отримано:", data);
+    } catch (err) {
+        console.error("Помилка:", err);
+        document.getElementById("city-name").innerText = "Помилка зв'язку";
     }
-}
+};
 
-// Обробка помилок геолокації
-function showError(error) {
-    const cityLabel = document.getElementById("city-name");
-    switch (error.code) {
-        case error.PERMISSION_DENIED:
-            cityLabel.innerText = "Доступ до локації заборонено";
-            break;
-        case error.POSITION_UNAVAILABLE:
-            cityLabel.innerText = "Локація недоступна";
-            break;
-        default:
-            cityLabel.innerText = "Помилка геолокації";
-    }
-}
-
-// Запускаємо все при завантаженні сторінки
+// Запускаємо функцію при завантаженні сторінки
 getLocation();
