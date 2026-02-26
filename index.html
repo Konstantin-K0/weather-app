@@ -3,17 +3,22 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-        <title>Simple weather app</title>
+        <title>Simple weather PWA</title>
+        <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <link rel="manifest" href="manifest.json" />
-        <link rel="stylesheet" href="style.css" />
         <link rel="apple-touch-icon" href="icon.png" />
+        <link rel="stylesheet" href="style.css" />
+        <script defer src="script.js"></script>
     </head>
     <body>
-        <div class="container">
-            <button id="colorBtn">Натисни мене!</button>
+        <div class="weather-card">
+            <p class="label">ваша локація</p>
+
+            <h1 id="city-name">КИЇВ</h1>
+
+            <div class="temp-container"><span id="temperature">--</span><span class="unit">°C</span></div>
         </div>
-        <script src="script.js"></script>
     </body>
 </html>
