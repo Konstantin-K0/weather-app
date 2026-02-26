@@ -1,32 +1,5 @@
 "use strict";
 
-// 1. Функція для отримання локації
-function getLocation() {
-    if (navigator.geolocation) {
-        // Запитуємо дозвіл у користувача
-        navigator.geolocation.getCurrentPosition(showPosition, showError);
-    } else {
-        document.getElementById("city-name").innerText = "Геолокація не підтримується";
-    }
-}
-
-const geoUrl = `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=50.048344&longitude=14.5125922&localityLanguage=uk`;
-
-const request = fetch(geoUrl);
-
-console.log(request);
-
-const getCityData = function (lng, lat) {
-    const geoUrl = `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lng}&localityLanguage=uk`;
-    
-    fetch(geoUrl).then(response => response.json()).then(data => {
-        console.log(data);
-    });
-
-}
-
-getCityData(14.5125922, 50.048344);
-/*
 const translations = {
     uk: { label: "ВАША ЛОКАЦІЯ", loading: "Завантаження...", error: "Помилка" },
     en: { label: "YOUR LOCATION", loading: "Loading...", error: "Error" },
@@ -55,35 +28,40 @@ function getLocation() {
 }
 
 // Встановлюємо початковий текст мітки згідно з мовою системи
-document.querySelector('.label').innerText = lang.label;
+document.querySelector(".label").innerText = lang.label;
 
 // 2. Коли отримали координати — запитуємо погоду
 async function showPosition(position) {
     const lat = position.coords.latitude;
     const lon = position.coords.longitude;
 
-    const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`;
-    
-    // Передаємо userLang у запит до геокодера, щоб назва міста теж була мовою системи
-    const geoUrl = `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=${userLang}`;
+    const cityEl = document.getElementById("city-name");
+    const tempEl = document.querySelector(".temp-container");
 
     try {
-        const [weatherResponse, geoResponse] = await Promise.all([
-            fetch(weatherUrl),
-            fetch(geoUrl)
-        ]);
-
-        const weatherData = await weatherResponse.json();
+        // 1. Отримуємо місто
+        const geoResponse = await fetch(
+            `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=${userLang}`,
+        );
         const geoData = await geoResponse.json();
 
-        document.getElementById("temperature").innerText = Math.round(weatherData.current_weather.temperature);
-        
-        // Назва міста прийде мовою системи завдяки localityLanguage=${userLang}
-        const city = geoData.city || geoData.locality || lang.error;
-        document.getElementById("city-name").innerText = city;
+        // Вставляємо назву міста і показуємо його
+        cityEl.innerText = geoData.city || geoData.locality || lang.error;
+        cityEl.classList.add("visible");
 
+        // Чекаємо 300мс для ефекту черговості (пауза між появою міста і температури)
+        await new Promise((resolve) => setTimeout(resolve, 300));
+
+        // 2. Отримуємо погоду
+        const weatherResponse = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`);
+        const weatherData = await weatherResponse.json();
+
+        // Вставляємо температуру і показуємо її
+        document.getElementById("temperature").innerText = Math.round(weatherData.current_weather.temperature);
+        tempEl.classList.add("visible");
     } catch (error) {
-        document.getElementById("city-name").innerText = lang.error;
+        cityEl.innerText = lang.error;
+        cityEl.classList.add("visible");
     }
 }
 
@@ -104,4 +82,3 @@ function showError(error) {
 
 // Запускаємо все при завантаженні сторінки
 getLocation();
-*/
