@@ -17,21 +17,13 @@ const getLocation = () => {
 const locale = navigator.language || "en-US";
 const now = new Date();
 
-const time = now.toLocaleTimeString(locale, {
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-});
-
 const date = now.toLocaleDateString(locale, {
     weekday: "short",
     day: "numeric",
     month: "short",
 });
 
-const result = `${time} - ${date}`;
-
-document.querySelector(".datetime").innerText = result;
+document.querySelector(".datetime").innerText = date;
 
 const error = (err) => {
     console.warn(`Помилка геолокації (${err.code}): ${err.message}`);
