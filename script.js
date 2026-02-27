@@ -1,28 +1,44 @@
 "use strict";
 
 const getLocation = () => {
-    // Перевіряємо, чи підтримує браузер геолокацію
     if (!navigator.geolocation) {
         alert("Геолокація не підтримується вашим браузером");
         return;
     }
 
-    // Параметри: висока точність, таймаут 10 секунд
     const options = {
         enableHighAccuracy: true,
         timeout: 10000,
     };
 
-    // Викликаємо вбудований метод
     navigator.geolocation.getCurrentPosition(success, error, options);
 };
 
-// Функція, яка спрацює при успішному отриманні координат
+const locale = navigator.language || "en-US";
+const now = new Date();
+
+const time = now.toLocaleTimeString(locale, {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+});
+
+const date = now.toLocaleDateString(locale, {
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+});
+
+const result = `${time} - ${date}`;
+
+document.querySelector(".datetime").innerText = result;
+
+const error = (err) => {
+    console.warn(`Помилка геолокації (${err.code}): ${err.message}`);
+};
+
 const success = async (position) => {
     const { latitude, longitude } = position.coords;
-
-    // Показуємо стан завантаження (можна додати клас до картки)
-    document.querySelector(".weather-card").classList.add("loading");
 
     // Виконуємо запити (await змушує JS чекати відповіді)
     try {
@@ -30,29 +46,22 @@ const success = async (position) => {
             getCityName(latitude, longitude), // функція тепер має повертати назву
             getWeather(latitude, longitude), // функція тепер має повертати дані погоди
         ]);
-
-        // Коли дані прийшли — прибираємо завантаження і малюємо інтерфейс
-        renderUI(cityData, weatherData);
     } catch (err) {
         console.error("Помилка завантаження", err);
     }
 };
 
-// Функція для обробки помилок (наприклад, користувач заборонив доступ)
-const error = (err) => {
-    console.warn(`Помилка геолокації (${err.code}): ${err.message}`);
-    document.getElementById("city-name").innerText = "Доступ заборонено";
-};
-
 const getCityName = async (lat, lon) => {
     try {
-        const url = `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=uk`;
+        const url = `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=${locale}`;
 
         const response = await fetch(url);
         const data = await response.json();
 
         // Вибираємо найбільш логічну назву (місто або район)
         const cityName = data.city || data.locality || "Невідомо";
+
+        console.log(`city: ${cityName}`);
 
         // Оновлюємо заголовок в HTML
         document.getElementById("city-name").innerText = cityName.toUpperCase();
@@ -64,25 +73,24 @@ const getCityName = async (lat, lon) => {
 
 const getWeather = async (lat, lon) => {
     try {
-        // 1. Поточні дані (Current)
-        const currentParams = [
-            "temperature_2m",
-            "apparent_temperature",
-            "relative_humidity_2m",
-            "precipitation",
-            "wind_speed_10m",
-            "uv_index",
-            "cloud_cover",
-        ].join(",");
+        const params = new URLSearchParams({
+            latitude: lat,
+            longitude: lon,
 
-        // 2. Погодинні дані (Hourly) — додаємо те, що зникло
-        const hourlyParams = ["temperature_2m", "precipitation_probability"].join(",");
+            // Поточна погода
+            current_weather: "true",
 
-        // 3. Щоденні дані (Daily)
-        const dailyParams = ["temperature_2m_max", "temperature_2m_min", "precipitation_probability_max", "uv_index_max"].join(",");
+            // Погодинний прогноз
+            hourly: "temperature_2m,precipitation_probability,wind_speed_10m,weather_code",
 
-        // 4. Формуємо повний URL
-        const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=${currentParams}&hourly=${hourlyParams}&daily=${dailyParams}&timezone=auto&forecast_days=10`;
+            // Денний прогноз (14 днів)
+            daily: "temperature_2m_max,temperature_2m_min,precipitation_probability_max,weather_code",
+
+            forecast_days: "14",
+            timezone: "auto",
+        });
+
+        const url = `https://api.open-meteo.com/v1/forecast?${params}`;
 
         const response = await fetch(url);
 
@@ -90,11 +98,15 @@ const getWeather = async (lat, lon) => {
 
         const data = await response.json();
 
-        // Open-Meteo повертає дані у структурі data.current.temperature_2m
-        const temp = Math.round(data.current.temperature_2m);
+        const temp = Math.round(data.current_weather.temperature);
+        const maxTempToday = Math.round(data.daily.temperature_2m_max[0]);
+        const minTempToday = Math.round(data.daily.temperature_2m_min[0]);
 
         // Оновлюємо інтерфейс
-        document.getElementById("temperature").innerText = temp;
+        document.querySelector(".main-temperature").innerText = temp;
+        document.querySelector(".max-temperature").innerText = maxTempToday;
+        document.querySelector(".min-temperature").innerText = minTempToday;
+        document.querySelector(".condition").innerText = getWeatherDescription(data.current_weather.weathercode);
 
         // Оскільки Open-Meteo не дає назву міста (тільки погоду),
         // назву "КИЇВ" поки залишимо або пізніше додамо окремий крок для неї.
@@ -104,6 +116,30 @@ const getWeather = async (lat, lon) => {
         document.getElementById("city-name").innerText = "Помилка зв'язку";
     }
 };
+
+function getWeatherDescription(code) {
+    if (code === 0) return "Clear sky";
+
+    if ([1, 2, 3].includes(code)) return "Mainly clear, partly cloudy, and overcast";
+
+    if ([45, 48].includes(code)) return "Fog and depositing rime fog";
+
+    if (code >= 51 && code <= 55) return "Freezing Drizzle: Light and dense intensity";
+
+    if (code >= 56 && code <= 57) return "Drizzle: Light, moderate, and dense intensity";
+
+    if (code >= 61 && code <= 65) return "Rain: Slight, moderate and heavy intensity";
+    if (code >= 66 && code <= 67) return "Freezing Rain: Light and heavy intensity";
+
+    if (code >= 71 && code <= 75) return "Snow fall: Slight, moderate, and heavy intensity";
+    if (code === 77) return "Snow grains";
+    if (code >= 80 && code <= 82) return "Rain showers: Slight, moderate, and violent";
+    if (code >= 85 && code <= 86) return "Snow showers slight and heavy";
+    if (code === 95) return "Thunderstorm: Slight or moderate";
+    if (code >= 96 && code <= 99) return "Thunderstorm with slight and heavy hail";
+
+    return "❓";
+}
 
 // Запускаємо функцію при завантаженні сторінки
 getLocation();

@@ -1,165 +1,242 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap');
-
-*, *::before, *::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
 }
 
-html, body {
-  height: 100%;
+html,
+body {
+    font-family: "Roboto", sans-serif;
+    color: #454545;
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+    overscroll-behavior: none;
 }
 
 body {
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #e8e8e8;
-  font-family: 'Inter', sans-serif;
+    /* Робимо фон фіксованим */
+    background: linear-gradient(40deg, #ffb464 0%, #fff6d6 100%);
+    background-attachment: fixed;
+    background-size: cover;
+
+    color: #3c3c3c;
 }
 
 .weather-card {
-  width: min(390px, 100vw);
-  min-height: 100svh;
-  background:
-    radial-gradient(ellipse 120% 60% at 70% 0%, #ff9a5c 0%, transparent 60%),
-    radial-gradient(ellipse 80% 80% at 0% 30%, #ffb347 0%, transparent 50%),
-    linear-gradient(180deg, #ffd4a0 0%, #ffefe0 100%);
-  display: flex;
-  flex-direction: column;
-  padding: 64px 32px 40px;
-  position: relative;
-  overflow: hidden;
+    /* Основний контейнер, що займає весь екран */
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    height: 100vh;
+    /* Враховуємо безпечні зони для iPhone (чубчик та смужка внизу) */
+    padding-top: calc(20px + env(safe-area-inset-top));
+    /* padding-bottom: env(safe-area-inset-bottom); */
 }
 
-/* Noise grain */
-.weather-card::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.06'/%3E%3C/svg%3E");
-  pointer-events: none;
-  mix-blend-mode: multiply;
-}
-
-/* ── HEADER ── */
 .header {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    margin-bottom: 20px;
+    padding-left: 30px;
+    padding-right: 30px;
 }
 
-.datetime {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-  margin-bottom: 8px;
-}
-
-#time {
-  font-size: 0.95rem;
-  font-weight: 500;
-  color: rgba(0,0,0,0.55);
-}
-
-#date {
-  font-size: 0.85rem;
-  font-weight: 400;
-  color: rgba(0,0,0,0.38);
-}
-
-.label {
-  font-size: 0.6rem;
-  font-weight: 500;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: rgba(0,0,0,0.32);
-  margin-bottom: 2px;
+.spacer {
+    /* Створюємо невидимий елемент, який забере весь вільний простір */
+    flex-grow: 1;
 }
 
 #city-name {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: rgba(0,0,0,0.72);
-  letter-spacing: -0.025em;
+    font-family: "Montserrat", sans-serif;
+    font-weight: 700;
+    font-size: 34px;
+    letter-spacing: -0.5px;
 }
 
-/* ── SPACER ── */
-.spacer {
-  flex: 1;
+.datetime {
+    font-family: "Montserrat", sans-serif;
+    font-weight: 500;
+    font-size: 14px;
+    color: #5a5a5a;
+
+    margin-bottom: 10px;
 }
 
-/* ── TEMPERATURE ── */
+.main-temperature {
+    font-family: "Montserrat", sans-serif;
+    font-weight: 700;
+    font-size: 110px; /* Великий розмір як на референсі */
+    line-height: 1;
+}
+
 .temp-container {
-  display: flex;
-  align-items: flex-end;
-  gap: 4px;
-  padding-top: 24px;
-  border-top: 1.5px solid rgba(0,0,0,0.12);
+    display: flex;
+    justify-content: space-between; /* Розносимо температуру і high-low по краях */
+    /* align-items: flex-end;         Вирівнюємо по нижній лінії */
+    margin-bottom: 10px;
+    padding-left: 30px;
+    padding-right: 30px;
 }
 
-#temperature {
-  font-size: clamp(6rem, 24vw, 8rem);
-  font-weight: 900;
-  color: rgba(0,0,0,0.78);
-  line-height: 0.9;
-  letter-spacing: -0.05em;
+.temp-main-display {
+    display: flex;
+    align-items: flex-start; /* Градус буде зверху цифри */
 }
 
 .unit {
-  font-size: 1.1rem;
-  font-weight: 500;
-  color: rgba(0,0,0,0.42);
-  padding-bottom: 0.5rem;
+    font-family: "Montserrat", sans-serif;
+    font-weight: 600;
+    font-size: 32px;
+    padding-top: 10px; /* Компенсуємо візуальну вагу шрифту */
 }
 
-/* ── CONDITION ── */
+.high-low {
+    display: flex;
+    flex-direction: column; /* ↑ зверху, ↓ знизу */
+    justify-content: space-between; /* Розштовхує ↑ та ↓ по краях висоти */
+    align-items: flex-end; /* Притискаємо до правого краю */
+    padding-top: 15px;
+    padding-bottom: 10px;
+    font-family: "Roboto", sans-serif;
+    font-size: 16px;
+    font-weight: 500;
+}
+
+.high-arrow,
+.low-arrow {
+    margin-right: 2px;
+    font-weight: bold;
+}
+
+.high-low span {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
 .condition {
-  font-size: 1.1rem;
-  font-weight: 400;
-  color: rgba(0,0,0,0.55);
-  margin-top: 10px;
-  margin-bottom: 28px;
-  letter-spacing: -0.01em;
+    font-family: "Montserrat", sans-serif;
+    font-size: 24px;
+    font-weight: 300;
+    color: #5b5b5b;
+
+    /* padding-left: 30px; */
+    padding-right: 30px;
+
+    /* Відступи навколо тексту */
+    padding-top: 15px; /* Відстань від тексту до лінії */
+
+    margin-bottom: 40px;
+    margin-left: 8%;
+
+    /* Малюємо лінію */
+    border-top: 2px solid #3c3c3c;
+    width: 84%;
+
+    /* Плавність літер */
+    letter-spacing: -0.5px;
 }
 
-/* ── FORECAST ── */
 .forecast {
-  display: flex;
-  justify-content: space-between;
-  overflow-x: auto;
-  gap: 4px;
-  scrollbar-width: none;
+    display: flex;
+    flex-direction: row; /* Вишиковуємо в рядок */
+    justify-content: flex-start;
+
+    /* Увімкнення горизонтального скролу */
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch; /* Плавний скрол на iOS */
+
+    /* Прибираємо стандартний скролбар, щоб було чисто */
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE 10+ */
+
+    gap: 10px; /* Відстань між годинами */
+    padding-bottom: 10px;
+    padding-left: 13px;
+    margin-bottom: 30px;
+
+    -webkit-mask-image: linear-gradient(to right, black 85%, transparent 100%);
+    mask-image: linear-gradient(to right, black 85%, transparent 100%);
+}
+
+.daily-forecast {
+    background-color: #3c3c3c1b;
+
+    display: flex;
+    flex-direction: row; /* Вишиковуємо в рядок */
+    justify-content: flex-start;
+
+    /* Увімкнення горизонтального скролу */
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch; /* Плавний скрол на iOS */
+
+    /* Прибираємо стандартний скролбар, щоб було чисто */
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE 10+ */
+
+    gap: 20px; /* Відстань між годинами */
+    padding-top: 20px;
+    padding-bottom: 30px;
+    padding-left: 35px;
+
+    -webkit-mask-image: linear-gradient(to right, black 85%, transparent 100%);
+    mask-image: linear-gradient(to right, black 85%, transparent 100%);
 }
 
 .forecast::-webkit-scrollbar {
-  display: none;
+    display: none;
 }
 
 .forecast-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  flex-shrink: 0;
-  min-width: 44px;
+    display: flex;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    flex-direction: column;
+    align-items: center;
+    min-width: 19%; /* Щоб елементи не стискалися */
+    gap: 10px;
 }
 
 .f-temp {
-  font-size: 0.78rem;
-  font-weight: 600;
-  color: rgba(0,0,0,0.65);
-  letter-spacing: -0.01em;
+    font-family: "Roboto", sans-serif;
+    font-size: 16px;
+    font-weight: 800;
 }
 
 .f-icon {
-  font-size: 1.3rem;
-  line-height: 1;
+    font-size: 20px;
+    color: #0000007b;
 }
 
 .f-time {
-  font-size: 0.7rem;
-  font-weight: 400;
-  color: rgba(0,0,0,0.38);
+    font-family: "Roboto", sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+}
+
+.daily-forecast-item {
+    display: flex;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    flex-direction: column;
+    align-items: flex-start;
+    min-width: 15%; /* Щоб елементи не стискалися */
+    gap: 5px;
+
+    border-right: 1px solid #3c3c3c11;
+}
+
+.f-day {
+    font-family: "Roboto", sans-serif;
+    font-size: 12px;
+    font-weight: 400;
+}
+
+.f-date {
+    font-family: "Roboto", sans-serif;
+    font-size: 16px;
+    font-weight: 400;
 }

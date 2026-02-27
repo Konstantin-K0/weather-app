@@ -7,6 +7,13 @@
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Montserrat:wght@100;200;300;400;500;600;700&family=Roboto:wght@100;200;300;400;500;600;700;800&display=swap"
+            rel="stylesheet"
+        />
         <link rel="manifest" href="manifest.json" />
         <link rel="apple-touch-icon" href="icon.png" />
         <link rel="stylesheet" href="style.css" />
@@ -15,68 +22,141 @@
     <body>
         <div class="weather-card">
             <!-- TOP: час і місто -->
-            <div class="header">
+            <header class="header">
                 <div class="datetime">
-                    <span id="time">11:30 am</span>
-                    <span id="date">Fri, Jan 4</span>
+                    Searching...
                 </div>
-                <p class="label">location</p>
                 <h1 id="city-name">Prague</h1>
-            </div>
+            </header>
 
             <div class="spacer"></div>
 
             <!-- СЕРЕДИНА: температура -->
-            <div class="temp-container"><span id="temperature">22</span><span class="unit">°C</span></div>
+            <div class="temp-container">
+                <div class="temp-main-display">
+                    <span class="main-temperature">22</span>
+                    <span class="unit">°C</span>
+                </div>
+
+                <div class="high-low">
+                    <span><span class="high-arrow">↑</span><span class="max-temperature">32</span>°C</span>
+                    <span><span class="low-arrow">↓</span><span class="min-temperature">18</span>°C</span>
+                </div>
+            </div>
 
             <p class="condition">Clear and sunny</p>
 
             <!-- НИЗ: прогноз погодинний -->
             <div class="forecast">
                 <div class="forecast-item">
-                    <span class="f-temp">24°</span>
-                    <span class="f-icon">☀️</span>
-                    <span class="f-time">12 pm</span>
+                    <span class="f-temp">22°</span>
+                    <span class="f-icon"><i class="fa-solid fa-sun"></i></span>
+                    <span class="f-time">now</span>
                 </div>
                 <div class="forecast-item">
                     <span class="f-temp">25°</span>
-                    <span class="f-icon">🌤️</span>
+                    <span class="f-icon"><i class="fa-solid fa-cloud-rain"></i></span>
                     <span class="f-time">1 pm</span>
                 </div>
                 <div class="forecast-item">
                     <span class="f-temp">24°</span>
-                    <span class="f-icon">⛅</span>
+                    <span class="f-icon"><i class="fa-solid fa-cloud-sun-rain"></i></span>
                     <span class="f-time">2 pm</span>
                 </div>
                 <div class="forecast-item">
                     <span class="f-temp">22°</span>
-                    <span class="f-icon">🌥️</span>
+                    <span class="f-icon"><i class="fa-solid fa-cloud-sun"></i></span>
                     <span class="f-time">3 pm</span>
                 </div>
                 <div class="forecast-item">
                     <span class="f-temp">20°</span>
-                    <span class="f-icon">🌦️</span>
+                    <span class="f-icon"><i class="fa-solid fa-cloud-rain"></i></span>
                     <span class="f-time">4 pm</span>
                 </div>
                 <div class="forecast-item">
                     <span class="f-temp">18°</span>
-                    <span class="f-icon">🌧️</span>
+                    <span class="f-icon"><i class="fa-solid fa-cloud-meatball"></i></span>
                     <span class="f-time">5 pm</span>
                 </div>
                 <div class="forecast-item">
                     <span class="f-temp">17°</span>
-                    <span class="f-icon">🌧️</span>
+                    <span class="f-icon"><i class="fa-solid fa-cloud-bolt"></i></span>
                     <span class="f-time">6 pm</span>
                 </div>
                 <div class="forecast-item">
                     <span class="f-temp">17°</span>
-                    <span class="f-icon">🌧️</span>
+                    <span class="f-icon"><i class="fa-solid fa-cloud-showers-heavy"></i></span>
                     <span class="f-time">6 pm</span>
                 </div>
                 <div class="forecast-item">
                     <span class="f-temp">17°</span>
-                    <span class="f-icon">🌧️</span>
+                    <span class="f-icon"><i class="fa-solid fa-cloud"></i></span>
                     <span class="f-time">6 pm</span>
+                </div>
+                <div class="forecast-item">
+                    <span class="f-temp">17°</span>
+                    <span class="f-icon"><i class="fa-solid fa-cloud-sun"></i></span>
+                    <span class="f-time">6 pm</span>
+                </div>
+                <div class="forecast-item">
+                    <span class="f-temp">17°</span>
+                    <span class="f-icon"><i class="fa-solid fa-cloud-sun"></i></span>
+                    <span class="f-time">6 pm</span>
+                </div>
+                <div class="forecast-item">
+                    <span class="f-temp">17°</span>
+                    <span class="f-icon"><i class="fa-solid fa-cloud-sun"></i></span>
+                    <span class="f-time">6 pm</span>
+                </div>
+            </div>
+            <div class="daily-forecast">
+                <div class="daily-forecast-item">
+                    <span class="f-day">Tue</span>
+                    <span class="f-date date-active">10.11</span>
+                </div>
+                <div class="daily-forecast-item">
+                    <span class="f-day">Tue</span>
+                    <span class="f-date">11.11</span>
+                </div>
+                <div class="daily-forecast-item">
+                    <span class="f-day">Tue</span>
+                    <span class="f-date">12.11</span>
+                </div>
+                <div class="daily-forecast-item">
+                    <span class="f-day">Tue</span>
+                    <span class="f-date">13.11</span>
+                </div>
+                <div class="daily-forecast-item">
+                    <span class="f-day">Tue</span>
+                    <span class="f-date">14.11</span>
+                </div>
+                <div class="daily-forecast-item">
+                    <span class="f-day">Tue</span>
+                    <span class="f-date">15.11</span>
+                </div>
+                <div class="daily-forecast-item">
+                    <span class="f-day">Tue</span>
+                    <span class="f-date">16.11</span>
+                </div>
+                <div class="daily-forecast-item">
+                    <span class="f-day">Tue</span>
+                    <span class="f-date">17.11</span>
+                </div>
+                <div class="daily-forecast-item">
+                    <span class="f-day">Tue</span>
+                    <span class="f-date">18.11</span>
+                </div>
+                <div class="daily-forecast-item">
+                    <span class="f-day">Tue</span>
+                    <span class="f-date">19.11</span>
+                </div>
+                <div class="daily-forecast-item">
+                    <span class="f-day">Tue</span>
+                    <span class="f-date">20.11</span>
+                </div>
+                <div class="daily-forecast-item">
+                    <span class="f-day">Tue</span>
+                    <span class="f-date">21.11</span>
                 </div>
             </div>
         </div>
