@@ -1,5 +1,7 @@
 "use strict";
 
+const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
 const getLocation = () => {
     if (!navigator.geolocation) {
         alert("Геолокація не підтримується вашим браузером");
@@ -90,9 +92,9 @@ const getWeather = async (lat, lon) => {
 
         const data = await response.json();
 
-        const temp = Math.round(data.current_weather.temperature);
-        const maxTempToday = Math.round(data.daily.temperature_2m_max[0]);
-        const minTempToday = Math.round(data.daily.temperature_2m_min[0]);
+        const temp = Math.ceil(data.current_weather.temperature);
+        const maxTempToday = Math.ceil(data.daily.temperature_2m_max[0]);
+        const minTempToday = Math.ceil(data.daily.temperature_2m_min[0]);
 
         // Оновлюємо інтерфейс
         document.querySelector(".main-temperature").innerText = temp;
@@ -100,8 +102,40 @@ const getWeather = async (lat, lon) => {
         document.querySelector(".min-temperature").innerText = minTempToday;
         document.querySelector(".condition").innerText = getWeatherDescription(data.current_weather.weathercode);
 
-        // Оскільки Open-Meteo не дає назву міста (тільки погоду),
-        // назву "КИЇВ" поки залишимо або пізніше додамо окремий крок для неї.
+        const containerDailyForcast = document.querySelector(".daily-forecast");
+        containerDailyForcast.innerHTML = ""; // Очищаємо контейнер перед додаванням нових даних
+
+        data.daily.time.forEach((time, index) => {
+            const timeStamp = new Date(time);
+            const dayOfWeek = timeStamp.getDay();
+            const day = String(timeStamp.getDate()).padStart(2, "0");
+            const month = String(timeStamp.getMonth() + 1).padStart(2, "0");
+            const dateLabel = `${day}.${month}`;
+
+            console.log(index);
+
+            const div = document.createElement("div");
+
+            div.className = "daily-forecast-item";
+            if (index === 0) div.classList.add("active-day");
+
+            div.innerHTML = `
+                <span class="f-day">${daysOfWeek[dayOfWeek]}</span>
+                <span class="f-date">${dateLabel}</span>
+            `;
+            containerDailyForcast.appendChild(div);
+
+            div.addEventListener("click", () => {
+                document.querySelectorAll(".daily-forecast-item").forEach((el) => el.classList.remove("active-day"));
+
+                div.classList.add("active-day");
+
+                renderHourly(index, data);
+            });
+        });
+
+        renderHourly(0, data); // Показуємо погодинний прогноз для сьогоднішнього дня
+
         console.log("Дані отримано:", data);
     } catch (err) {
         console.error("Помилка:", err);
@@ -131,6 +165,64 @@ function getWeatherDescription(code) {
     if (code >= 96 && code <= 99) return "Thunderstorm with slight and heavy hail";
 
     return "❓";
+}
+
+function getWeatherIcon(code) {
+    if (code === 0) return "fa-solid fa-sun";
+
+    if ([1, 2, 3].includes(code)) return "fa-solid fa-cloud-sun";
+
+    if ([45, 48].includes(code)) return "fa-solid fa-smog";
+
+    if (code >= 51 && code <= 55) return "fa-solid fa-droplet";
+    if (code >= 56 && code <= 57) return "fa-solid fa-droplet";
+
+    if (code >= 61 && code <= 65) return "fa-solid fa-cloud-rain";
+    if (code >= 66 && code <= 67) return "fa-solid fa-snowflake";
+
+    if (code >= 71 && code <= 75) return "fa-solid fa-snowflake";
+    if (code === 77) return "fa-solid fa-snowflake";
+    if (code >= 80 && code <= 82) return "fa-solid fa-cloud-showers-heavy";
+    if (code >= 85 && code <= 86) return "fa-solid fa-snowflake";
+    if (code === 95) return "fa-solid fa-bolt";
+    if (code >= 96 && code <= 99) return "fa-solid fa-bolt";
+
+    return "❓";
+}
+
+function renderHourly(dayIndex, data) {
+    const container = document.querySelector(".forecast");
+    container.innerHTML = "";
+
+    const now = new Date();
+    const currentHour = now.getHours();
+
+    let start = dayIndex * 24;
+    let end = start + 24;
+
+    // 🔥 Якщо сьогодні — починаємо з поточної години
+    if (dayIndex === 0) {
+        start += currentHour;
+    }
+
+    for (let i = start; i < end; i++) {
+        const temp = Math.ceil(data.hourly.temperature_2m[i]);
+        const weatherCode = data.hourly.weather_code[i];
+
+        const hour = new Date(data.hourly.time[i]).getHours();
+        const timeLabel = hour.toString().padStart(2, "0") + ":00";
+
+        const div = document.createElement("div");
+        div.className = "forecast-item";
+
+        div.innerHTML = `
+            <span class="f-temp">${temp}°</span>
+            <span class="f-icon"><i class="fa-solid ${getWeatherIcon(weatherCode)}"></i></span>
+            <span class="f-time">${timeLabel}</span>
+            `;
+
+        container.appendChild(div);
+    }
 }
 
 // Запускаємо функцію при завантаженні сторінки
