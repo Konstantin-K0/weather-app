@@ -72,7 +72,9 @@ const getWeather = async (lat, lon) => {
             longitude: lon,
 
             // Поточна погода
-            current_weather: "true",
+            // current_weather: "true",
+
+            current: "temperature_2m,relative_humidity_2m,precipitation,rain,weather_code,apparent_temperature,wind_speed_10m",
 
             // Погодинний прогноз
             hourly: "temperature_2m,precipitation_probability,wind_speed_10m,weather_code",
@@ -92,7 +94,7 @@ const getWeather = async (lat, lon) => {
 
         const data = await response.json();
 
-        const temp = Math.ceil(data.current_weather.temperature);
+        const temp = Math.ceil(data.current.temperature_2m);
         const maxTempToday = Math.ceil(data.daily.temperature_2m_max[0]);
         const minTempToday = Math.ceil(data.daily.temperature_2m_min[0]);
 
@@ -100,7 +102,7 @@ const getWeather = async (lat, lon) => {
         document.querySelector(".main-temperature").innerText = temp;
         document.querySelector(".max-temperature").innerText = maxTempToday;
         document.querySelector(".min-temperature").innerText = minTempToday;
-        document.querySelector(".condition").innerText = getWeatherDescription(data.current_weather.weathercode);
+        document.querySelector(".condition").innerText = getWeatherDescription(data.current.weather_code);
 
         const containerDailyForcast = document.querySelector(".daily-forecast");
         containerDailyForcast.innerHTML = ""; // Очищаємо контейнер перед додаванням нових даних
@@ -111,8 +113,6 @@ const getWeather = async (lat, lon) => {
             const day = String(timeStamp.getDate()).padStart(2, "0");
             const month = String(timeStamp.getMonth() + 1).padStart(2, "0");
             const dateLabel = `${day}.${month}`;
-
-            console.log(index);
 
             const div = document.createElement("div");
 
@@ -174,15 +174,15 @@ function getWeatherIcon(code) {
 
     if ([45, 48].includes(code)) return "fa-solid fa-smog";
 
-    if (code >= 51 && code <= 55) return "fa-solid fa-droplet";
-    if (code >= 56 && code <= 57) return "fa-solid fa-droplet";
+    if (code >= 51 && code <= 55) return "fa-solid fa-cloud-rain";
+    if (code >= 56 && code <= 57) return "fa-solid fa-cloud-rain";
 
-    if (code >= 61 && code <= 65) return "fa-solid fa-cloud-rain";
+    if (code >= 61 && code <= 65) return "fa-solid fa-cloud-showers-heavy";
     if (code >= 66 && code <= 67) return "fa-solid fa-snowflake";
 
     if (code >= 71 && code <= 75) return "fa-solid fa-snowflake";
     if (code === 77) return "fa-solid fa-snowflake";
-    if (code >= 80 && code <= 82) return "fa-solid fa-cloud-showers-heavy";
+    if (code >= 80 && code <= 82) return "fa-solid fa-cloud-showers-water";
     if (code >= 85 && code <= 86) return "fa-solid fa-snowflake";
     if (code === 95) return "fa-solid fa-bolt";
     if (code >= 96 && code <= 99) return "fa-solid fa-bolt";
@@ -213,13 +213,26 @@ function renderHourly(dayIndex, data) {
         const timeLabel = hour.toString().padStart(2, "0") + ":00";
 
         const div = document.createElement("div");
-        div.className = "forecast-item";
+        
+        console.log(data.hourly.precipitation_probability[i], weatherCode);
 
-        div.innerHTML = `
-            <span class="f-temp">${temp}°</span>
-            <span class="f-icon"><i class="fa-solid ${getWeatherIcon(weatherCode)}"></i></span>
+        
+        if (data.hourly.precipitation_probability[i] >= 45) {
+            div.className = "forecast-item-rainy";
+            div.innerHTML = `
             <span class="f-time">${timeLabel}</span>
+            <span class="f-icon"><i class="fa-solid ${getWeatherIcon(weatherCode)}"></i></span>
+            <span class="f-proc">${data.hourly.precipitation_probability[i]}%</span>
+            <span class="f-temp">${temp}°</span>
             `;
+        } else {
+            div.className = "forecast-item";
+            div.innerHTML = `
+                <span class="f-time">${timeLabel}</span>
+                <span class="f-icon"><i class="fa-solid ${getWeatherIcon(weatherCode)}"></i></span>
+                <span class="f-temp">${temp}°</span>
+        `;
+        }
 
         container.appendChild(div);
     }

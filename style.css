@@ -197,24 +197,47 @@ body {
     flex-direction: column;
     align-items: center;
     min-width: 19%; /* Щоб елементи не стискалися */
-    gap: 10px;
+    height: 110px;
+    padding: 8px;
+}
+
+.forecast-item-rainy {
+    display: flex;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    flex-direction: column;
+    align-items: center;
+    min-width: 19%; /* Щоб елементи не стискалися */
+    height: 110px;
+    padding: 8px;
 }
 
 .f-temp {
     font-family: "Roboto", sans-serif;
-    font-size: 16px;
+    font-size: 20px;
     font-weight: 800;
+    margin-top: auto;
 }
 
-.f-icon {
+.f-icon, .f-proc {
     font-size: 20px;
     color: #0000007b;
+    display: block;
 }
+
 
 .f-time {
     font-family: "Roboto", sans-serif;
-    font-size: 14px;
+    font-size: 12px;
     font-weight: 400;
+    margin-bottom: auto;
+}
+
+.f-proc {
+    font-family: "Roboto", sans-serif;
+    font-size: 12px;
+    font-weight: 400;
+    margin-bottom: auto;
 }
 
 .daily-forecast-item {
@@ -241,6 +264,7 @@ body {
     font-weight: 400;
 }
 
-.active-day .f-day, .active-day .f-date{
+.active-day .f-day,
+.active-day .f-date {
     font-weight: 800;
 }
