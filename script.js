@@ -95,10 +95,14 @@ const getWeather = async (lat, lon) => {
         const data = await response.json();
 
         const temp = Math.ceil(data.current.temperature_2m);
+        const weatherCode = data.current.weather_code;
+        const weatherIcon = getWeatherIcon(weatherCode);
         const maxTempToday = Math.ceil(data.daily.temperature_2m_max[0]);
         const minTempToday = Math.ceil(data.daily.temperature_2m_min[0]);
 
         // Оновлюємо інтерфейс
+        document.body.style.backgroundImage = getWeatherBG(weatherCode);
+        document.querySelector(".spacer").innerHTML = `<span class="f-icon-big"><i class="fa-solid ${weatherIcon}"></i></span>`;
         document.querySelector(".main-temperature").innerText = temp;
         document.querySelector(".max-temperature").innerText = maxTempToday;
         document.querySelector(".min-temperature").innerText = minTempToday;
@@ -186,6 +190,29 @@ function getWeatherIcon(code) {
     if (code >= 85 && code <= 86) return "fa-solid fa-snowflake";
     if (code === 95) return "fa-solid fa-bolt";
     if (code >= 96 && code <= 99) return "fa-solid fa-bolt";
+
+    return "❓";
+}
+
+function getWeatherBG(code) {
+    if (code === 0) return `linear-gradient(40deg, #40b9ff 0%, #fff1d6 100%`;
+
+    if ([1, 2, 3].includes(code)) return `linear-gradient(40deg, #b3ccff 0%, #ffffff 100%)`;
+
+    if ([45, 48].includes(code)) return `linear-gradient(40deg, #c2c2c2 0%, #fff9ed 100%)`;
+
+    if (code >= 51 && code <= 55) return `linear-gradient(40deg, #6fbdde 0%, #c6d7e5 100%)`;
+    if (code >= 56 && code <= 57) return `linear-gradient(40deg, #6fbdde 0%, #c6d7e5 100%)`;
+
+    if (code >= 61 && code <= 65) return `linear-gradient(40deg, #458eae 0%, #a0b1bf 100%)`;
+    if (code >= 66 && code <= 67) return `linear-gradient(40deg, #bdd3e8 0%, #f1f9ff 100%)`;
+
+    if (code >= 71 && code <= 75) return `linear-gradient(40deg, #bdd3e8 0%, #f1f9ff 100%)`;
+    if (code === 77) return `linear-gradient(40deg, #bdd3e8 0%, #f1f9ff 100%)`;
+    if (code >= 80 && code <= 82) return `linear-gradient(40deg, #2489b4 0%, #7fa9cb 100%)`;
+    if (code >= 85 && code <= 86) return `linear-gradient(40deg, #bdd3e8 0%, #f1f9ff 100%)`;
+    if (code === 95) return `linear-gradient(40deg, #4a637c 0%, #f1f9ff 100%)`;
+    if (code >= 96 && code <= 99) return `linear-gradient(40deg, #4a637c 0%, #f1f9ff 100%)`;
 
     return "❓";
 }
