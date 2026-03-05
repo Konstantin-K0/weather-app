@@ -1,0 +1,293 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body {
+    font-family: "Roboto", sans-serif;
+    color: #000000;
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+    overscroll-behavior: none;
+}
+
+body {
+    /* Робимо фон фіксованим */
+    /* background: linear-gradient(40deg, #ffb464 0%, #fff6d6 100%); */
+    background-attachment: fixed;
+    background-size: cover;
+
+    color: #000000;
+}
+
+.weather-card {
+    /* Основний контейнер, що займає весь екран */
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    height: 100vh;
+    /* Враховуємо безпечні зони для iPhone (чубчик та смужка внизу) */
+    padding-top: calc(20px + env(safe-area-inset-top));
+    /* padding-bottom: env(safe-area-inset-bottom); */
+}
+
+.header {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    margin-bottom: 20px;
+    padding-left: 30px;
+    padding-right: 30px;
+}
+
+.spacer {
+    /* Створюємо невидимий елемент, який забере весь вільний простір */
+    flex-grow: 1;
+
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-left: 30px;
+    padding-right: 30px;
+}
+
+#city-name {
+    font-family: "Montserrat", sans-serif;
+    font-weight: 700;
+    font-size: 34px;
+    letter-spacing: -0.5px;
+}
+
+.datetime {
+    font-family: "Montserrat", sans-serif;
+    font-weight: 500;
+    font-size: 14px;
+    color: #000000;
+
+    margin-bottom: 10px;
+}
+
+.main-temperature {
+    font-family: "Montserrat", sans-serif;
+    font-weight: 700;
+    font-size: 110px; /* Великий розмір як на референсі */
+    line-height: 1;
+}
+
+.temp-container {
+    display: flex;
+    justify-content: space-between; /* Розносимо температуру і high-low по краях */
+    /* align-items: flex-end;         Вирівнюємо по нижній лінії */
+    margin-bottom: 10px;
+    padding-left: 30px;
+    padding-right: 30px;
+}
+
+.temp-main-display {
+    display: flex;
+    align-items: flex-start; /* Градус буде зверху цифри */
+}
+
+.unit {
+    font-family: "Montserrat", sans-serif;
+    font-weight: 600;
+    font-size: 32px;
+    padding-top: 10px; /* Компенсуємо візуальну вагу шрифту */
+}
+
+.high-low {
+    display: flex;
+    flex-direction: column; /* ↑ зверху, ↓ знизу */
+    justify-content: space-between; /* Розштовхує ↑ та ↓ по краях висоти */
+    align-items: flex-end; /* Притискаємо до правого краю */
+    padding-top: 15px;
+    padding-bottom: 10px;
+    font-family: "Roboto", sans-serif;
+    font-size: 16px;
+    font-weight: 500;
+}
+
+.high-arrow,
+.low-arrow {
+    margin-right: 2px;
+    font-weight: bold;
+}
+
+.high-low span {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.condition {
+    font-family: "Montserrat", sans-serif;
+    font-size: 24px;
+    font-weight: 300;
+    color: #000000;
+
+    /* padding-left: 30px; */
+    padding-right: 30px;
+
+    /* Відступи навколо тексту */
+    padding-top: 15px; /* Відстань від тексту до лінії */
+
+    margin-bottom: 40px;
+    margin-left: 8%;
+
+    /* Малюємо лінію */
+    border-top: 2px solid #1b1b1b;
+    width: 84%;
+
+    /* Плавність літер */
+    letter-spacing: -0.5px;
+}
+
+.forecast-wrapper {
+    overflow-x: auto;
+    overflow-y: visible;
+    display: flex;
+    flex-direction: column;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    gap: 10px;
+
+    padding-bottom: 10px;
+    padding-top: 15px;
+    padding-left: 13px;
+    margin-bottom: 10px;
+
+    -webkit-mask-image: linear-gradient(to right, black 85%, transparent 100%);
+    mask-image: linear-gradient(to right, black 85%, transparent 100%);
+}
+
+.temp-chart {
+    display: block;
+    overflow: visible;
+}
+
+.forecast {
+    display: flex;
+}
+
+.daily-forecast {
+    background-color: #3c3c3c1b;
+
+    display: flex;
+    flex-direction: row; /* Вишиковуємо в рядок */
+    justify-content: flex-start;
+
+    /* Увімкнення горизонтального скролу */
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch; /* Плавний скрол на iOS */
+
+    /* Прибираємо стандартний скролбар, щоб було чисто */
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE 10+ */
+
+    gap: 20px; /* Відстань між годинами */
+    padding-top: 20px;
+    padding-bottom: 30px;
+    padding-left: 35px;
+
+    -webkit-mask-image: linear-gradient(to right, black 85%, transparent 100%);
+    mask-image: linear-gradient(to right, black 85%, transparent 100%);
+}
+
+.forecast::-webkit-scrollbar {
+    display: none;
+}
+
+.forecast-item {
+    display: flex;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    flex-direction: column;
+    align-items: center;
+    min-width: 19%; /* Щоб елементи не стискалися */
+    height: 70px;
+    /* padding: 8px; */
+}
+
+.forecast-item-rainy {
+    display: flex;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    flex-direction: column;
+    align-items: center;
+    min-width: 19%; /* Щоб елементи не стискалися */
+    height: 110px;
+    /* padding: 8px; */
+}
+
+.f-icon,
+.f-proc {
+    font-size: 20px;
+    color: #0000007b;
+    display: block;
+}
+
+.f-icon-img {
+    width: 32px;
+    height: 32px;
+    /* filter: brightness(0) invert(1);  */
+}
+.f-icon-big {
+    display: block;
+}
+
+.f-icon-big .f-icon-img {
+    width: 200px;
+    height: 200px;
+    /* filter: brightness(0) invert(1);  */
+}
+
+
+.f-time {
+    font-family: "Roboto", sans-serif;
+    font-size: 12px;
+    font-weight: 400;
+    margin-top: auto;
+}
+
+.f-proc {
+    font-family: "Roboto", sans-serif;
+    font-size: 12px;
+    font-weight: 400;
+    margin-bottom: auto;
+}
+
+.daily-forecast-item {
+    display: flex;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    flex-direction: column;
+    align-items: flex-start;
+    min-width: 15%; /* Щоб елементи не стискалися */
+    gap: 5px;
+
+    border-right: 1px solid #3c3c3c11;
+}
+
+.f-day {
+    font-family: "Roboto", sans-serif;
+    font-size: 12px;
+    font-weight: 400;
+}
+
+.f-date {
+    font-family: "Roboto", sans-serif;
+    font-size: 16px;
+    font-weight: 400;
+}
+
+.active-day .f-day,
+.active-day .f-date {
+    font-weight: 800;
+}
