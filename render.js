@@ -5,7 +5,7 @@ import { getWeatherIcon, getWeatherBG, getWeatherDescription } from "./weather.j
 export async function renderCurrent(data, lang) {
     const temp = Math.ceil(data.current.temperature_2m);
     const weatherCode = data.current.weather_code;
-    const weatherIcon = getWeatherIcon(weatherCode);
+    const isDay = data.current.is_day;
     const maxTempToday = Math.ceil(data.daily.temperature_2m_max[0]);
     const minTempToday = Math.ceil(data.daily.temperature_2m_min[0]);
 
@@ -13,7 +13,7 @@ export async function renderCurrent(data, lang) {
 
     document.body.style.backgroundImage = getWeatherBG(weatherCode);
 
-    await renderBigIcon(weatherCode);
+    await renderBigIcon(weatherCode, isDay);
 
     // document.querySelector(".spacer").innerHTML = `<span class="f-icon-big"><img class="f-icon-img-big" src="${getWeatherIcon(weatherCode)}" /></span>`;
     document.querySelector(".main-temperature").innerText = temp;
@@ -75,6 +75,7 @@ export function renderHourly(dayIndex, data) {
 
     for (let i = start; i < end; i++) {
         const weatherCode = data.hourly.weather_code[i];
+        const isDay = data.hourly.is_day[i];
 
         const hour = new Date(data.hourly.time[i]).getHours();
         const timeLabel = hour.toString().padStart(2, "0") + ":00";
@@ -84,14 +85,14 @@ export function renderHourly(dayIndex, data) {
         if (data.hourly.precipitation_probability[i] >= 45) {
             div.className = "forecast-item-rainy";
             div.innerHTML = `
-            <span class="f-icon"><img class="f-icon-img" src="${getWeatherIcon(weatherCode)}" /></span>
+            <span class="f-icon"><img class="f-icon-img" src="${getWeatherIcon(weatherCode,isDay)}" /></span>
             <span class="f-proc">${data.hourly.precipitation_probability[i]}%</span>
             <span class="f-time">${timeLabel}</span>
             `;
         } else {
             div.className = "forecast-item";
             div.innerHTML = `
-            <span class="f-icon"><img class="f-icon-img" src="${getWeatherIcon(weatherCode)}" /></span>
+            <span class="f-icon"><img class="f-icon-img" src="${getWeatherIcon(weatherCode,isDay)}" /></span>
             <span class="f-time">${timeLabel}</span>
         `;
         }
@@ -216,12 +217,12 @@ export function renderCity(city) {
     document.getElementById("city-name").innerText = city.toUpperCase();
 }
 
-export async function renderBigIcon(weatherCode) {
+export async function renderBigIcon(weatherCode, isDay) {
     const spacer = document.querySelector(".spacer");
     spacer.innerHTML = "";
 
     try {
-        const response = await fetch(getWeatherIcon(weatherCode));
+        const response = await fetch(getWeatherIcon(weatherCode, isDay));
         const svgText = await response.text();
 
         const wrapper = document.createElement("div");

@@ -17,9 +17,9 @@ export async function fetchWeather(lat, lon) {
     const params = new URLSearchParams({
         latitude: lat,
         longitude: lon,
-        current: "temperature_2m,relative_humidity_2m,precipitation,rain,weather_code,apparent_temperature,wind_speed_10m",
+        current: "temperature_2m,relative_humidity_2m,precipitation,rain,weather_code,apparent_temperature,wind_speed_10m,is_day",
         // Погодинний прогноз
-        hourly: "temperature_2m,precipitation_probability,wind_speed_10m,weather_code",
+        hourly: "temperature_2m,precipitation_probability,wind_speed_10m,weather_code,is_day",
         // Денний прогноз (14 днів)
         daily: "temperature_2m_max,temperature_2m_min,precipitation_probability_max,weather_code",
         forecast_days: "14",

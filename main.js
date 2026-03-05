@@ -17,6 +17,8 @@ async function update() {
             fetchWeather(latitude, longitude), // функція тепер має повертати дані погоди
         ]);
 
+        console.log(weather);
+
         renderDate(locale);
         renderCity(city);
         renderCurrent(weather, lang);

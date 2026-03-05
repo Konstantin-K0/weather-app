@@ -116,29 +116,29 @@ export function getWeatherDescription(code, lang = "en") {
     return "❓";
 }
 
-export function getWeatherIcon(code) {
-    if (code === 0) return "./icons/clear-day.svg";
+export function getWeatherIcon(code, isDay) {
+    if (code === 0) return isDay ? "./icons/clear-day.svg" : "./icons/clear-night.svg";
 
-    if ([1, 2, 3].includes(code)) return "./icons/overcast-day.svg";
+    if ([1, 2, 3].includes(code)) return isDay ? "./icons/overcast-day.svg" : "./icons/overcast-night.svg";
 
-    if ([45, 48].includes(code)) return "./icons/fog.svg";
+    if ([45, 48].includes(code)) return isDay ? "./icons/overcast-day-fog.svg" : "./icons/overcast-night-fog.svg";
 
-    if (code >= 51 && code <= 55) return "./icons/drizzle.svg";
+    if (code >= 51 && code <= 55) return isDay ? "./icons/overcast-day-drizzle.svg" : "./icons/overcast-night-drizzle.svg";
 
-    if (code >= 56 && code <= 57) return "./icons/sleet.svg"; 
+    if (code >= 56 && code <= 57) return isDay ? "./icons/overcast-day-sleet.svg" : "./icons/overcast-night-sleet.svg"; 
 
-    if (code >= 61 && code <= 65) return "./icons/rain.svg";
+    if (code >= 61 && code <= 65) return isDay ? "./icons/overcast-day-rain.svg" : "./icons/overcast-night-rain.svg";
     
-    if (code >= 66 && code <= 67) return "./icons/sleet.svg";
+    if (code >= 66 && code <= 67) return isDay ? "./icons/overcast-day-sleet.svg" : "./icons/overcast-night-sleet.svg";
 
-    if (code >= 71 && code <= 76) return "./icons/snow.svg";
+    if (code >= 71 && code <= 76) return isDay ? "./icons/overcast-day-snow.svg" : "./icons/overcast-night-snow.svg";
 
-     if (code === 77) return "./icons/hail.svg";
+     if (code === 77) return isDay ? "./icons/overcast-day-hail.svg" : "./icons/overcast-night-hail.svg";
 
     if (code >= 80 && code <= 82) return "./icons/rain.svg";
     if (code >= 85 && code <= 86) return "./icons/snow.svg";
-    if (code === 95) return "./icons/thunderstorms-rain.svg";  
-    if (code >= 96 && code <= 99) return "./icons/thunderstorms-snow.svg";
+    if (code === 95) return isDay ? "./icons/thunderstorms-day-rain.svg" : "./icons/thunderstorms-night-rain.svg";  
+    if (code >= 96 && code <= 99) return isDay ? "./icons/thunderstorms-day-snow.svg" : "./icons/thunderstorms-night-snow.svg";
 
     return "❓";
 }
