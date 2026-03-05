@@ -140,7 +140,7 @@ export function getWeatherIcon(code, isDay) {
     if (code === 95) return isDay ? "./icons/thunderstorms-day-rain.svg" : "./icons/thunderstorms-night-rain.svg";  
     if (code >= 96 && code <= 99) return isDay ? "./icons/thunderstorms-day-snow.svg" : "./icons/thunderstorms-night-snow.svg";
 
-    return "❓";
+    return "./icons/clear-day.svg";
 }
 
 const weatherGradients = {

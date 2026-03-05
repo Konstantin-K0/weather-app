@@ -127,7 +127,7 @@ body {
 
 .condition {
     font-family: "Montserrat", sans-serif;
-    font-size: 24px;
+    font-size: 20px;
     font-weight: 300;
     color: #000000;
 
@@ -158,10 +158,10 @@ body {
     -ms-overflow-style: none;
     gap: 10px;
 
-    padding-bottom: 10px;
+    padding-bottom: 30px;
     padding-top: 15px;
     padding-left: 13px;
-    margin-bottom: 10px;
+    margin-bottom: 15px;
 
     touch-action: pan-x; /* дозволяє тільки горизонтальний свайп */
 
