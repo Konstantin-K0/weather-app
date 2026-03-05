@@ -2,7 +2,7 @@
 import { getWeatherIcon, getWeatherBG, getWeatherDescription } from "./weather.js";
 
 // export function renderCity(name) { ... }
-export function renderCurrent(data, lang) {
+export async function renderCurrent(data, lang) {
     const temp = Math.ceil(data.current.temperature_2m);
     const weatherCode = data.current.weather_code;
     const weatherIcon = getWeatherIcon(weatherCode);
@@ -13,17 +13,7 @@ export function renderCurrent(data, lang) {
 
     document.body.style.backgroundImage = getWeatherBG(weatherCode);
 
-    const spacer = document.querySelector(".spacer");
-    spacer.innerHTML = ""; // очищаємо
-
-    const img = document.createElement("img");
-    img.className = "f-icon-img-big";
-    img.src = ""; // спочатку пусто
-    requestAnimationFrame(() => {
-        img.src = getWeatherIcon(weatherCode); // встановлюємо після рендеру
-    });
-
-    spacer.appendChild(img);
+    await renderBigIcon(weatherCode);
 
     // document.querySelector(".spacer").innerHTML = `<span class="f-icon-big"><img class="f-icon-img-big" src="${getWeatherIcon(weatherCode)}" /></span>`;
     document.querySelector(".main-temperature").innerText = temp;
@@ -224,4 +214,22 @@ export function renderDate(locale) {
 
 export function renderCity(city) {
     document.getElementById("city-name").innerText = city.toUpperCase();
+}
+
+export async function renderBigIcon(weatherCode) {
+    const spacer = document.querySelector(".spacer");
+    spacer.innerHTML = "";
+
+    try {
+        const response = await fetch(getWeatherIcon(weatherCode));
+        const svgText = await response.text();
+
+        const wrapper = document.createElement("div");
+        wrapper.className = "f-icon-big";
+        wrapper.innerHTML = svgText;
+
+        spacer.appendChild(wrapper);
+    } catch {
+        spacer.innerHTML = "";
+    }
 }

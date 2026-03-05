@@ -241,6 +241,11 @@ body {
     display: block;
 }
 
+.f-icon-big svg {
+    width: 200px;
+    height: 200px;
+}
+
 .f-icon-img {
     width: 32px;
     height: 32px;
