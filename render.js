@@ -12,7 +12,20 @@ export function renderCurrent(data, lang) {
     // Оновлюємо інтерфейс
 
     document.body.style.backgroundImage = getWeatherBG(weatherCode);
-    document.querySelector(".spacer").innerHTML = `<span class="f-icon-big"><img class="f-icon-img" src="${getWeatherIcon(weatherCode)}" /></span>`;
+
+    const spacer = document.querySelector(".spacer");
+    spacer.innerHTML = ""; // очищаємо
+
+    const img = document.createElement("img");
+    img.className = "f-icon-img-big";
+    img.src = ""; // спочатку пусто
+    requestAnimationFrame(() => {
+        img.src = getWeatherIcon(weatherCode); // встановлюємо після рендеру
+    });
+
+    spacer.appendChild(img);
+
+    // document.querySelector(".spacer").innerHTML = `<span class="f-icon-big"><img class="f-icon-img-big" src="${getWeatherIcon(weatherCode)}" /></span>`;
     document.querySelector(".main-temperature").innerText = temp;
     document.querySelector(".max-temperature").innerText = maxTempToday;
     document.querySelector(".min-temperature").innerText = minTempToday;
@@ -56,6 +69,9 @@ export function renderHourly(dayIndex, data) {
     container.innerHTML = "";
     container.scrollLeft = 0;
 
+    const wrapper = document.querySelector(".forecast-wrapper");
+    if (wrapper) wrapper.scrollLeft = 0;
+
     const now = new Date();
     const currentHour = now.getHours();
 
@@ -68,7 +84,6 @@ export function renderHourly(dayIndex, data) {
     }
 
     for (let i = start; i < end; i++) {
-        const temp = Math.ceil(data.hourly.temperature_2m[i]);
         const weatherCode = data.hourly.weather_code[i];
 
         const hour = new Date(data.hourly.time[i]).getHours();

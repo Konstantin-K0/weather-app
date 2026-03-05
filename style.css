@@ -150,7 +150,7 @@ body {
 
 .forecast-wrapper {
     overflow-x: auto;
-    overflow-y: visible;
+    overflow-y: hidden;
     display: flex;
     flex-direction: column;
     -webkit-overflow-scrolling: touch;
@@ -162,6 +162,8 @@ body {
     padding-top: 15px;
     padding-left: 13px;
     margin-bottom: 10px;
+
+    touch-action: pan-x; /* дозволяє тільки горизонтальний свайп */
 
     -webkit-mask-image: linear-gradient(to right, black 85%, transparent 100%);
     mask-image: linear-gradient(to right, black 85%, transparent 100%);
@@ -233,21 +235,17 @@ body {
     display: block;
 }
 
+.f-icon-img-big {
+    width: 200px;
+    height: 200px;
+    display: block;
+}
+
 .f-icon-img {
     width: 32px;
     height: 32px;
     /* filter: brightness(0) invert(1);  */
 }
-.f-icon-big {
-    display: block;
-}
-
-.f-icon-big .f-icon-img {
-    width: 200px;
-    height: 200px;
-    /* filter: brightness(0) invert(1);  */
-}
-
 
 .f-time {
     font-family: "Roboto", sans-serif;
