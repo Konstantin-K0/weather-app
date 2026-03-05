@@ -145,42 +145,42 @@ export function getWeatherIcon(code, isDay) {
 
 const weatherGradients = {
     0:  "linear-gradient(160deg, #ffe2a7 0%, #ffffff 60%)",  // ясно — золотисто-помаранчевий захід
-    1:  "linear-gradient(160deg, #89c4e1 0%, #ffffff 100%)",  // переважно ясно — м'яке блакитне небо
-    2:  "linear-gradient(160deg, #a8c0d6 0%, #ffffff 100%)",  // мінлива хмарність — сіро-блакитний
-    3:  "linear-gradient(160deg, #8e9eab 0%, #ffffff 100%)",  // хмарно — сталевий
+    1:  "linear-gradient(160deg, #89c4e1 0%, #ffffff 60%)",  // переважно ясно — м'яке блакитне небо
+    2:  "linear-gradient(160deg, #a8c0d6 0%, #ffffff 60%)",  // мінлива хмарність — сіро-блакитний
+    3:  "linear-gradient(160deg, #8e9eab 0%, #ffffff 60%)",  // хмарно — сталевий
 
-    45: "linear-gradient(160deg, #b8bec7 0%, #ffffff 100%)",  // туман — розмитий сірий
-    48: "linear-gradient(160deg, #a0aab4 0%, #ffffff 100%)",  // паморозний туман
+    45: "linear-gradient(160deg, #b8bec7 0%, #ffffff 60%)",  // туман — розмитий сірий
+    48: "linear-gradient(160deg, #a0aab4 0%, #ffffff 60%)",  // паморозний туман
 
-    51: "linear-gradient(160deg, #5b8fa8 0%, #ffffff 100%)",  // легка мряка
-    53: "linear-gradient(160deg, #4a7a96 0%, #ffffff 100%)",  // помірна мряка
-    55: "linear-gradient(160deg, #3a6880 0%, #ffffff 100%)",  // густа мряка
+    51: "linear-gradient(160deg, #5b8fa8 0%, #ffffff 60%)",  // легка мряка
+    53: "linear-gradient(160deg, #4a7a96 0%, #ffffff 60%)",  // помірна мряка
+    55: "linear-gradient(160deg, #3a6880 0%, #ffffff 60%)",  // густа мряка
 
-    56: "linear-gradient(160deg, #7ea8c4 0%, #ffffff 100%)",  // крижана мряка
-    57: "linear-gradient(160deg, #6a96b5 0%, #ffffff 100%)",
+    56: "linear-gradient(160deg, #7ea8c4 0%, #ffffff 60%)",  // крижана мряка
+    57: "linear-gradient(160deg, #6a96b5 0%, #ffffff 60%)",
 
-    61: "linear-gradient(160deg, #3a7bd5 0%, #ffffff 100%)",  // невеликий дощ — яскраво-синій
-    63: "linear-gradient(160deg, #2c6fad 0%, #ffffff 100%)",  // помірний дощ
-    65: "linear-gradient(160deg, #1a4f8a 0%, #ffffff 100%)",  // сильний дощ — темно-синій
+    61: "linear-gradient(160deg, #3a7bd5 0%, #ffffff 60%)",  // невеликий дощ — яскраво-синій
+    63: "linear-gradient(160deg, #2c6fad 0%, #ffffff 60%)",  // помірний дощ
+    65: "linear-gradient(160deg, #1a4f8a 0%, #ffffff 60%)",  // сильний дощ — темно-синій
 
-    66: "linear-gradient(160deg, #89afc9 0%, #ffffff 100%)",  // крижаний дощ
-    67: "linear-gradient(160deg, #7098b5 0%, #ffffff 100%)",
+    66: "linear-gradient(160deg, #89afc9 0%, #ffffff 60%)",  // крижаний дощ
+    67: "linear-gradient(160deg, #7098b5 0%, #ffffff 60%)",
 
-    71: "linear-gradient(160deg, #a8c8e8 0%, #ffffff 100%)",  // слабий сніг — крижано-білий
-    73: "linear-gradient(160deg, #90b8d8 0%, #ffffff 100%)",  // помірний сніг
-    75: "linear-gradient(160deg, #78a8cc 0%, #ffffff 100%)",  // сильний сніг
-    77: "linear-gradient(160deg, #b0cce0 0%, #ffffff 100%)",  // снігові зерна
+    71: "linear-gradient(160deg, #a8c8e8 0%, #ffffff 60%)",  // слабий сніг — крижано-білий
+    73: "linear-gradient(160deg, #90b8d8 0%, #ffffff 60%)",  // помірний сніг
+    75: "linear-gradient(160deg, #78a8cc 0%, #ffffff 60%)",  // сильний сніг
+    77: "linear-gradient(160deg, #b0cce0 0%, #ffffff 60%)",  // снігові зерна
 
-    80: "linear-gradient(160deg, #2980b9 0%, #ffffff 100%)",  // зливи — насичений синій
-    81: "linear-gradient(160deg, #1c6ea4 0%, #ffffff 100%)",
-    82: "linear-gradient(160deg, #0f4c81 0%, #ffffff 100%)",  // сильні зливи — майже нічний
+    80: "linear-gradient(160deg, #2980b9 0%, #ffffff 60%)",  // зливи — насичений синій
+    81: "linear-gradient(160deg, #1c6ea4 0%, #ffffff 60%)",
+    82: "linear-gradient(160deg, #0f4c81 0%, #ffffff 60%)",  // сильні зливи — майже нічний
 
-    85: "linear-gradient(160deg, #98c0d8 0%, #ffffff 100%)",  // снігові шквали
-    86: "linear-gradient(160deg, #80adc8 0%, #ffffff 100%)",
+    85: "linear-gradient(160deg, #98c0d8 0%, #ffffff 60%)",  // снігові шквали
+    86: "linear-gradient(160deg, #80adc8 0%, #ffffff 60%)",
 
-    95: "linear-gradient(160deg, #2c3e50 0%, #ffffff 100%)",  // гроза — темно-синьо-сірий
-    96: "linear-gradient(160deg, #1a2a3a 0%, #ffffff 100%)",  // гроза з градом
-    99: "linear-gradient(160deg, #0f1c2a 0%, #ffffff 100%)",  // сильна гроза — майже чорний
+    95: "linear-gradient(160deg, #2c3e50 0%, #ffffff 60%)",  // гроза — темно-синьо-сірий
+    96: "linear-gradient(160deg, #1a2a3a 0%, #ffffff 60%)",  // гроза з градом
+    99: "linear-gradient(160deg, #0f1c2a 0%, #ffffff 60%)",  // сильна гроза — майже чорний
 };
 
 export function getWeatherBG(code) {
