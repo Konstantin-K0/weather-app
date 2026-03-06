@@ -71,6 +71,7 @@ export function renderHourly(dayIndex, data) {
     // 🔥 Якщо сьогодні — починаємо з поточної години
     if (dayIndex === 0) {
         start += currentHour;
+        end = start + 24;
     }
 
     for (let i = start; i < end; i++) {
