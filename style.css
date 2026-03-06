@@ -137,7 +137,7 @@ body {
     /* Відступи навколо тексту */
     padding-top: 15px; /* Відстань від тексту до лінії */
 
-    margin-bottom: 40px;
+    margin-bottom: 20px;
     margin-left: 8%;
 
     /* Малюємо лінію */
@@ -242,8 +242,8 @@ body {
 }
 
 .f-icon-big svg {
-    width: 200px;
-    height: 200px;
+    width: 150px;
+    height: 150px;
 }
 
 .f-icon-img {

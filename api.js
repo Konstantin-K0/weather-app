@@ -8,7 +8,7 @@ export async function fetchCityName(lat, lon, locale) {
     const data = await response.json();
 
     // Вибираємо найбільш логічну назву (місто або район)
-    const cityName = data.city || data.locality || "Невідомо";
+    const cityName = data.locality || "Невідомо";
 
     return cityName
 }
