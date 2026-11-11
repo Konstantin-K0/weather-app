@@ -1,0 +1,20 @@
+.preview-trigger, .preview-close {
+  min-height: 44px;
+  padding: 0 var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--text);
+}
+
+.preview-trigger {
+  position: fixed;
+  right: max(var(--space-3), env(safe-area-inset-right));
+  bottom: max(var(--space-3), env(safe-area-inset-bottom));
+  z-index: 5;
+  font-size: var(--text-xs);
+  box-shadow: var(--shadow);
+}
+
+.preview-dialog { margin-bottom: max(var(--space-3), env(safe-area-inset-bottom)); }
+#preview-scene option { text-transform: capitalize; }

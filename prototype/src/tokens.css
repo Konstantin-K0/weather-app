@@ -1,0 +1,73 @@
+@font-face {
+  font-family: 'Inter Variable';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url(@fontsource-variable/inter/files/inter-latin-wght-normal.woff2) format('woff2-variations');
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+@font-face {
+  font-family: 'Inter Variable';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url(@fontsource-variable/inter/files/inter-latin-ext-wght-normal.woff2) format('woff2-variations');
+  unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Inter Variable';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url(@fontsource-variable/inter/files/inter-cyrillic-wght-normal.woff2) format('woff2-variations');
+  unicode-range: U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116;
+}
+@font-face {
+  font-family: 'Inter Variable';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url(@fontsource-variable/inter/files/inter-cyrillic-ext-wght-normal.woff2) format('woff2-variations');
+  unicode-range: U+0460-052F,U+1C80-1C8A,U+20B4,U+2DE0-2DFF,U+A640-A69F,U+FE2E-FE2F;
+}
+:root {
+  color-scheme: light;
+  --font: 'Inter Variable', Inter, system-ui, sans-serif;
+  --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px;
+  --space-5: 20px; --space-6: 24px; --space-8: 32px; --space-10: 40px; --space-12: 48px;
+  --radius-sm: 8px; --radius-md: 16px; --radius-lg: 24px; --radius-pill: 999px;
+  --text-xs: .75rem; --text-sm: .875rem; --text-base: 1rem; --text-lg: 1.125rem;
+  --page: #f5f6f8; --surface: #ffffff; --surface-raised: #eef1f5;
+  --text: #202c38; --muted: #596773; --border: #dce2e8;
+  --control-border: #818e99;
+  --accent: #386782; --accent-soft: #e5eef4; --focus: #125cc7;
+  --shadow: 0 4px 20px #1d364305;
+  --atmosphere-base: #142840;
+  --atmosphere-ink: #f4f8ff;
+  --atmosphere-muted: #e1ecf7;
+  --scene-sunny: linear-gradient(119deg, #264560, #689ab9 52%, #a1c1cc);
+  --scene-cloudy: linear-gradient(120deg, #253c50, #6f8b9c 57%, #9faeb9);
+  --scene-rainy: linear-gradient(116deg, #20364e, #526e85 57%, #526d88);
+  --scene-night: linear-gradient(120deg, #101b32, #233453 54%, #273f63);
+  --duration-fast: 160ms; --duration-normal: 260ms; --duration-scene: 980ms;
+  --ease: cubic-bezier(.2,.7,.2,1); --ambient-duration: 24s;
+}
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --page: #111820; --surface: #1b2530; --surface-raised: #27333f;
+  --text: #edf2f7; --muted: #acbac7; --border: #35424f;
+  --control-border: #748494;
+  --accent: #9cc8e5; --accent-soft: #2b4051; --focus: #a9d6ff;
+  --shadow: 0 4px 20px #00000010;
+}
+@media (prefers-reduced-motion: reduce) {
+  :root { --duration-fast: 0ms; --duration-normal: 0ms; --duration-scene: 0ms; }
+  *, *::before, *::after { animation: none !important; scroll-behavior: auto !important; transition: none !important; }
+}
+
+/* The preview can add reduced motion, while OS preferences always take priority. */
+:root[data-preview-reduced] *, :root[data-preview-reduced] *::before, :root[data-preview-reduced] *::after {
+  animation: none !important;
+  scroll-behavior: auto !important;
+  transition: none !important;
+}

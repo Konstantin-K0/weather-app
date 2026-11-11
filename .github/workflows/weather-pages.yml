@@ -1,0 +1,83 @@
+name: Weather App Pages
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: Site to build
+        type: choice
+        options: [v2, legacy]
+        default: v2
+        required: true
+      publish:
+        description: Publish to the live GitHub Pages site
+        type: boolean
+        default: false
+
+permissions: {}
+
+env:
+  LEGACY_REVISION: 65cd849fa296759fcf41cccad897d55f318a863f
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - name: Check out the selected revision
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - name: Set up Node.js
+        if: inputs.target == 'v2'
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '24.21.0'
+          package-manager-cache: false
+      - name: Build and validate Weather App 2.0
+        if: inputs.target == 'v2'
+        working-directory: prototype
+        run: |
+          npm ci
+          npm test
+          npm run build:pages
+          npm run validate:pwa -- dist --pages
+      - name: Check out the verified legacy revision
+        if: inputs.target == 'legacy'
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          ref: ${{ env.LEGACY_REVISION }}
+          path: legacy-source
+          persist-credentials: false
+      - name: Package the legacy site and retirement worker
+        if: inputs.target == 'legacy'
+        run: bash .github/pages/stage-legacy.sh legacy-source "$LEGACY_REVISION" "$RUNNER_TEMP/weather-pages-legacy"
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b # v4
+        with:
+          path: ${{ inputs.target == 'legacy' && format('{0}/weather-pages-legacy', runner.temp) || 'prototype/dist' }}
+          retention-days: 7
+
+  deploy:
+    if: >-
+      inputs.publish &&
+      github.repository == 'Konstantin-K0/weather-app' &&
+      github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      pages: write
+      id-token: write
+    concurrency:
+      group: pages
+      cancel-in-progress: false
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Publish Pages artifact
+        id: deployment
+        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4

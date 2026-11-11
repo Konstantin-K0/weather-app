@@ -1,0 +1,34 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+test('system changes are live, manual overrides win, and blocked storage is harmless', async () => {
+  let change;
+  const media = { matches: false, addEventListener: (type, listener) => { assert.equal(type, 'change'); change = listener; } };
+  const dataset = {};
+  let metaColor;
+  globalThis.window = { matchMedia: () => media };
+  globalThis.document = { documentElement: { dataset }, querySelector: () => ({ setAttribute: (_, value) => { metaColor = value; } }) };
+  globalThis.localStorage = { getItem: () => { throw new Error('Storage unavailable'); }, setItem: () => { throw new Error('Storage unavailable'); } };
+  const theme = await import('../src/theme.ts');
+  assert.equal(dataset.theme, 'light');
+  media.matches = true; change();
+  assert.equal(dataset.theme, 'dark');
+  assert.equal(metaColor, '#111820');
+  theme.setTheme('light'); change();
+  assert.equal(dataset.theme, 'light');
+  theme.setTheme('system');
+  assert.equal(dataset.theme, 'dark');
+  media.matches = false; change();
+  assert.equal(dataset.theme, 'light');
+  assert.equal(theme.getTheme(), 'system');
+
+  theme.setTheme('dark');
+  theme.setThemePreview('system');
+  assert.equal(dataset.theme, 'light');
+  assert.equal(theme.getTheme(), 'dark');
+  media.matches = true; change();
+  assert.equal(dataset.theme, 'dark');
+  theme.setThemePreview('light');
+  assert.equal(dataset.theme, 'light');
+  theme.setThemePreview(null);
+  assert.equal(dataset.theme, 'dark');
+});

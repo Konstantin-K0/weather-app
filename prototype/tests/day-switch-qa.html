@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Forecast QA</title></head>
+<body><output id="qa-result" hidden></output><div id="app"></div>
+<script type="module">
+  import { forecastFixture } from './weather-fixture.mjs';
+  const now = '2026-10-23T21:37:00Z';
+  const actualDate = Date;
+  Date.now = () => actualDate.parse(now);
+  const raw = forecastFixture({ now });
+  // Simulate a date with only a morning forecast and another with no hours.
+  const dateToKeepPartly = '2026-10-26';
+  const dateToOmit = '2026-10-27';
+  const formatDate = new Intl.DateTimeFormat('en-CA', {timeZone:raw.timezone,dateStyle:'short'});
+  const formatHour = new Intl.DateTimeFormat('en-GB', {timeZone:raw.timezone,hour:'2-digit',hourCycle:'h23'});
+  const hourlyIndices = raw.hourly.time.flatMap((time, i) => {
+    const date = formatDate.format(time * 1000);
+    const hour = Number(formatHour.format(time * 1000));
+    return date === dateToOmit || (date === dateToKeepPartly && hour >= 8) ? [] : [i];
+  });
+  for (const key of Object.keys(raw.hourly)) raw.hourly[key] = hourlyIndices.map(i => raw.hourly[key][i]);
+  // Keep test preferences in memory so this page can share the development origin.
+  const preferences = new Map([
+    ['weather-v2-locations', JSON.stringify({cities:[],selected:null,followDevice:false})],
+    ['weather-v2-language', 'en']
+  ]);
+  Storage.prototype.getItem = key => preferences.get(key) ?? null;
+  Storage.prototype.setItem = (key, value) => preferences.set(key, value);
+  // A forecast fixture must never populate the real application's offline database.
+  Object.defineProperty(window, 'indexedDB', { value: undefined });
+  let forecastRequests = 0;
+  window.fetch = async input => {
+    if (new URL(input).hostname !== 'api.open-meteo.com') return Response.json({results:[]});
+    forecastRequests++;
+    return Response.json(raw);
+  };
+  raw.daily.weather_code[4] = 99;
+  raw.daily.uv_index_max[4] = 15.4;
+  const app = document.querySelector('#app');
+  const ready = new Promise(resolve => {
+    const observer = new MutationObserver(() => {
+      if (!app.querySelector('.hour')) return;
+      observer.disconnect();
+      resolve();
+    });
+    observer.observe(app, { childList: true, subtree: true });
+  });
+
+  const assert = (condition, message) => {
+    if (!condition) throw new Error(message);
+  };
+  const nextFrame = () => new Promise(resolve => requestAnimationFrame(resolve));
+  const report = document.querySelector('#qa-result');
+  try {
+    await import('../src/main.ts');
+    await ready;
+    await document.fonts.ready;
+    const scroller = app.querySelector('.hour-scroll');
+    const details = app.querySelectorAll('.detail');
+    const cards = [app.querySelector('.hourly-panel'), ...details];
+    const geometry = () => cards.map(card => {
+      const rect = card.getBoundingClientRect();
+      return [Math.round(rect.top + scrollY), Math.round(rect.height)].join(':');
+    }).join('|');
+    const startingGeometry = geometry();
+    const startingY = scrollY;
+    assert(!app.querySelector('.day[aria-label]') && app.querySelector('.day[aria-description]'),
+      'The day button must use its visible label and expose weather details separately');
+    assert(!app.querySelector('#hourly button, .chart-cursor, .chart-readout'), 'Hourly selection remains');
+    scroller.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true, cancelable: true }));
+    assert(scroller.scrollLeft > 0, 'ArrowRight did not scroll the timeline');
+
+    for (const [day, hours, detailTime] of [
+      [1, 24, 'Tomorrow · 12:00'], [2, 25, 'Sunday · 12:00'], [3, 8, 'Monday · 07:00'],
+      [4, 0, 'Tuesday'], [0, 24, 'Now']
+    ]) {
+      const button = app.querySelector(`[data-day="${day}"]`);
+      button.click();
+      assert(button.getAttribute('aria-pressed') === 'true', 'Day highlight did not update immediately');
+      assert(scroller.scrollLeft === 0, 'Timeline did not reset');
+      assert(app.querySelectorAll('.hour').length === hours, 'Wrong hourly range');
+      assert(app.querySelector('#detail-day').textContent === detailTime, 'Wrong detail time');
+      await nextFrame();
+      assert(geometry() === startingGeometry, 'Forecast cards moved or changed size');
+      assert(scrollY === startingY, 'Page scrolled during selection');
+      assert(scroller === app.querySelector('.hour-scroll') &&
+        [...app.querySelectorAll('.detail')].every((card, i) => card === details[i]), 'Forecast containers were replaced');
+    }
+    assert(app.querySelector('.hour span[aria-hidden]').textContent === '23:00', 'Today did not start at the current hour');
+    const change = (selector, value) => {
+      const control = app.querySelector(selector);
+      control.value = value;
+      control.dispatchEvent(new Event('change', { bubbles: true }));
+    };
+    const selected = app.querySelector('[data-day="2"]');
+    selected.click();
+    change('#theme', 'dark');
+    change('#unit', 'F');
+    scroller.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true, cancelable: true }));
+    const horizontal = scroller.scrollLeft;
+    const temperature = app.querySelector('.hero-value').textContent;
+    const wind = app.querySelector('#wind-value').textContent;
+    const location = preferences.get('weather-v2-locations');
+    const requests = forecastRequests;
+    const headings = { uk: 'Погодинний прогноз', cs: 'Hodinová předpověď', ru: 'Почасовой прогноз', en: 'Hourly forecast' };
+    for (const [language, heading] of Object.entries(headings)) {
+      change('#language', language);
+      assert(document.documentElement.lang === language, 'Document language did not update');
+      assert(app.querySelector('#hourly-title').textContent === heading, 'Hourly heading did not translate');
+      assert(preferences.get('weather-v2-language') === language, 'Language was not saved');
+      assert(scroller.scrollLeft === horizontal, 'Language switch reset the timeline');
+      assert(selected.getAttribute('aria-pressed') === 'true', 'Language switch changed the selected date');
+      assert(app.querySelector('.hero-value').textContent === temperature && app.querySelector('#wind-value').textContent === wind, 'Language switch changed weather readings');
+      assert(app.querySelector('#unit').value === 'F' && document.documentElement.dataset.theme === 'dark', 'Language switch changed units or theme');
+      assert(preferences.get('weather-v2-locations') === location, 'Language switch changed saved locations');
+    }
+    assert(forecastRequests === requests, 'Language switch fetched weather again');
+    const locationButton = app.querySelector('#open-locations');
+    locationButton.focus();
+    locationButton.click();
+    const search = app.querySelector('#city-search');
+    search.value = 'Tokyo';
+    search.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }));
+    assert(!app.querySelector('#location-dialog').open && document.activeElement === locationButton,
+      'Escape from city search did not close the dialog and restore focus');
+    if (innerWidth <= 320) {
+      document.documentElement.style.fontSize = '200%';
+      const settings = app.querySelector('#settings-dialog');
+      for (const language of Object.keys(headings)) {
+        change('#language', language);
+        app.querySelector('#settings').click();
+        assert(settings.scrollWidth <= settings.clientWidth + 1, `Settings overflow with larger ${language} text`);
+        settings.close();
+      }
+      document.documentElement.style.removeProperty('font-size');
+      change('#language', 'en');
+    }
+    report.textContent = 'PASS: day selection, hourly scrolling, partial days, stable geometry, localization and dialog focus';
+    report.dataset.status = 'passed';
+  } catch (error) {
+    report.textContent = `FAIL: ${error.message}`;
+    report.dataset.status = 'failed';
+  } finally {
+    report.hidden = false;
+  }
+</script>
+</body>
+</html>
