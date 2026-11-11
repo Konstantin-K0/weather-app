@@ -96,7 +96,24 @@ const state = weatherState(render);
 const renderForecast = mountForecast(app);
 let rendered: { day: Day; unit: TemperatureUnit; location: string; language: Language; previous: boolean } | undefined;
 let renderedLocation: string | undefined;
-let freshnessTimer: number | undefined;
+let refreshTimer: number | undefined;
+
+function canAutoRefresh(): boolean {
+  return !document.hidden && navigator.onLine && !state.loading;
+}
+
+function scheduleRefresh(updated: number | undefined, labelsExpire: number): void {
+  window.clearTimeout(refreshTimer);
+  const now = Date.now();
+  const expires = updated === undefined ? Infinity : updated + expiryAge;
+  const deadline = Math.min(expires, labelsExpire > now ? labelsExpire : Infinity,
+    canAutoRefresh() ? state.nextRefreshAt : Infinity);
+  if (!Number.isFinite(deadline)) return;
+  refreshTimer = window.setTimeout(() => {
+    if (canAutoRefresh() && Date.now() >= state.nextRefreshAt) void state.refreshIfDue();
+    else render();
+  }, Math.max(1, deadline - now));
+}
 
 function render(): void {
   const snapshot = state.snapshot;
@@ -114,42 +131,40 @@ function render(): void {
   }
   const updated = snapshot && formatUpdated(snapshot.updated, snapshot.forecast.timezone);
   const offline = !navigator.onLine;
-  window.clearTimeout(freshnessTimer);
-  const now = Date.now();
-  const freshUntil = snapshot ? freshnessDeadline(snapshot) : 0;
-  const stale = !!snapshot && (snapshot.restored || !!state.error || offline || now >= freshUntil);
-  if (snapshot) {
-    const deadline = stale ? snapshot.updated + expiryAge : freshUntil;
-    freshnessTimer = window.setTimeout(render, Math.max(1, deadline - now));
-  }
-  refresh.hidden = state.loading || (!!snapshot && !state.error && !offline && !stale);
-  refresh.textContent = t(!snapshot || state.error || offline ? 'retry' : 'updateForecast');
+  const labelsExpire = snapshot ? freshnessDeadline(snapshot) : 0;
+  scheduleRefresh(snapshot?.updated, labelsExpire);
+  refresh.hidden = !!snapshot || state.loading;
+  refresh.textContent = t('retry');
   let status = '';
-  if (offline) status = t(snapshot ? 'offline' : 'offlineEmpty');
-  else if (state.locating) status = t('locating');
-  else if (state.loading) status = snapshot ? t('refreshing') : t('loading', { city: name });
-  else if (state.error) status = errorText(state.error, 'forecastFailed');
-  else if (!snapshot) status = t('forecastFailed');
-  const incomplete = snapshot?.forecast.incomplete;
-  if (updated) {
-    status = [status, stale ? t('previousForecast') : '', t('updated', { time: updated }),
-      incomplete ? t('incomplete') : ''].filter(Boolean).join(' ');
+  const updateLabel = updated ? t('updated', { time: updated }) : '';
+  if (offline) {
+    status = snapshot ? `${t('offline')} ${t('previousForecast')} ${updateLabel}` : t('offlineEmpty');
+  } else if (!snapshot) {
+    status = state.locating ? t('locating') : state.loading ? t('loading', { city: name }) :
+      errorText(state.error, 'forecastFailed');
   }
   if (message.textContent !== status) message.textContent = status;
-  statusRow.hidden = !!snapshot && !stale && !incomplete && !offline;
+  statusRow.hidden = !status;
   forecastNotice.textContent = status;
-  updatedNote.textContent = updated ? t('updated', { time: updated }) : '';
+  updatedNote.textContent = [
+    updateLabel,
+    snapshot?.forecast.incomplete ? t('incomplete') : '',
+    !offline && snapshot && state.error ? errorText(state.error, 'forecastFailed') : ''
+  ].filter(Boolean).join(' ');
   if (!snapshot) { rendered = undefined; return; }
 
+  // Keep existing forecast labels stable while the replacement is in flight.
+  const previous = offline || snapshot.restored || (state.loading && rendered?.location === city.id
+    ? rendered.previous : !!state.error || Date.now() >= labelsExpire);
   const { days } = snapshot.forecast;
   const day = days.find(item => item.key === selectedDay) ?? days[0]!;
   hero.update(name, day, unit,
-    city.id === defaultLocation.id ? t('defaultCity') : '', override, stale);
-  if (rendered?.day === day && rendered.unit === unit && rendered.language === language && rendered.previous === stale) return;
+    city.id === defaultLocation.id ? t('defaultCity') : '', override, previous);
+  if (rendered?.day === day && rendered.unit === unit && rendered.language === language && rendered.previous === previous) return;
   const resetScroll = rendered?.day.key !== day.key || rendered.location !== city.id;
-  renderForecast(days, day, unit, snapshot.forecast.timezone, resetScroll, stale);
+  renderForecast(days, day, unit, snapshot.forecast.timezone, resetScroll, previous);
   app.querySelector('#day-count')!.textContent = formatCount(days.length, 'day');
-  rendered = { day, unit, location: city.id, language, previous: stale };
+  rendered = { day, unit, location: city.id, language, previous };
 }
 
 app.querySelector('#daily')!.addEventListener('click', event => {
@@ -209,14 +224,21 @@ pauseMotion.addEventListener('change', () => {
   hero.pauseAmbient(pauseMotion.checked);
 });
 
-document.addEventListener('visibilitychange', () => {
-  if (!document.hidden) void state.update(false);
+function resumeRefresh(): void {
+  render();
+  if (canAutoRefresh()) void state.refreshIfDue(true);
+}
+document.addEventListener('visibilitychange', resumeRefresh);
+window.addEventListener('pageshow', event => { if (event.persisted) resumeRefresh(); });
+window.addEventListener('online', () => {
+  render();
+  if (!document.hidden) state.reconnect();
 });
-window.addEventListener('online', () => state.reconnect());
 window.addEventListener('offline', render);
 applyLanguage();
 registerOfflineShell();
-void state.update(false);
+const navigation = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming | undefined;
+void state.update(navigation?.type === 'reload');
 
 if (import.meta.env.DEV) {
   void import('./preview').then(({ mountPreview }) => mountPreview(

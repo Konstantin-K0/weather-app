@@ -182,6 +182,39 @@ test('refresh policy skips fresh readings, coalesces simultaneous work and write
   assert.equal(client.state.error.code, 'apiStatus');
 });
 
+test('automatic and foreground refresh share a 15-minute deadline and back off after failure', async t => {
+  const client = setup(t, record());
+  let attempts = 0;
+  const fetch = t.mock.method(globalThis, 'fetch', async () => ++attempts === 1
+    ? new Response('{}', { status: 503 })
+    : Response.json(raw));
+  await client.state.update(false);
+  assert.equal(client.state.nextRefreshAt, now + refreshAge);
+  client.advance(refreshAge - 1);
+  await client.state.refreshIfDue(true);
+  assert.equal(fetch.mock.callCount(), 0);
+
+  client.advance(1);
+  await Promise.all([client.state.refreshIfDue(), client.state.refreshIfDue(true)]);
+  assert.equal(fetch.mock.callCount(), 1);
+  assert.equal(client.state.snapshot.updated, now);
+  assert.equal(client.writes.length, 0);
+  assert.equal(client.state.nextRefreshAt, now + 2 * refreshAge);
+  await client.state.refreshIfDue(true);
+  assert.equal(fetch.mock.callCount(), 1);
+
+  client.advance(refreshAge);
+  client.navigator.onLine = false;
+  await client.state.refreshIfDue();
+  assert.equal(fetch.mock.callCount(), 1);
+  client.navigator.onLine = true;
+  await client.state.refreshIfDue(true);
+  assert.equal(fetch.mock.callCount(), 2);
+  assert.equal(client.state.snapshot.updated, now + 2 * refreshAge);
+  assert.equal(client.state.nextRefreshAt, now + 3 * refreshAge);
+  assert.equal(client.writes.length, 1);
+});
+
 test('a reconnect during an in-flight request retries only after that request fails', async t => {
   const client = setup(t, record(now - refreshAge));
   let fail;

@@ -5,8 +5,28 @@
 <script type="module">
   import { forecastFixture } from './weather-fixture.mjs';
   const now = '2026-10-23T21:37:00Z';
-  const actualDate = Date;
-  Date.now = () => actualDate.parse(now);
+  let clock = Date.parse(now);
+  Date.now = () => clock;
+  let hidden = false;
+  let online = true;
+  Object.defineProperty(document, 'hidden', { get: () => hidden });
+  Object.defineProperty(navigator, 'onLine', { get: () => online });
+  const timers = new Map();
+  const setTimeout = window.setTimeout.bind(window);
+  const clearTimeout = window.clearTimeout.bind(window);
+  let timerId = 0;
+  window.setTimeout = (callback, delay, ...args) => {
+    if (!(delay >= 60_000)) return setTimeout(callback, delay, ...args);
+    timers.set(--timerId, { at: clock + delay, run: () => callback(...args) });
+    return timerId;
+  };
+  window.clearTimeout = id => { if (!timers.delete(id)) clearTimeout(id); };
+  function advance(ms) {
+    clock += ms;
+    for (const [id, timer] of [...timers]) {
+      if (timer.at <= clock && timers.delete(id)) timer.run();
+    }
+  }
   const raw = forecastFixture({ now });
   // Simulate a date with only a morning forecast and another with no hours.
   const dateToKeepPartly = '2026-10-26';
@@ -29,10 +49,12 @@
   // A forecast fixture must never populate the real application's offline database.
   Object.defineProperty(window, 'indexedDB', { value: undefined });
   let forecastRequests = 0;
+  let forecastFailure = false;
   window.fetch = async input => {
     if (new URL(input).hostname !== 'api.open-meteo.com') return Response.json({results:[]});
     forecastRequests++;
-    return Response.json(raw);
+    return forecastFailure ? new Response('{}', { status: 503 }) :
+      Response.json({ ...raw, current: { ...raw.current, time: clock / 1000 } });
   };
   raw.daily.weather_code[4] = 99;
   raw.daily.uv_index_max[4] = 15.4;
@@ -114,7 +136,9 @@
       assert(app.querySelector('#unit').value === 'F' && document.documentElement.dataset.theme === 'dark', 'Language switch changed units or theme');
       assert(preferences.get('weather-v2-locations') === location, 'Language switch changed saved locations');
     }
-    assert(forecastRequests === requests, 'Language switch fetched weather again');
+    change('#theme', 'light');
+    change('#theme', 'dark');
+    assert(forecastRequests === requests, 'Changing language or theme fetched weather again');
     const locationButton = app.querySelector('#open-locations');
     locationButton.focus();
     locationButton.click();
@@ -135,7 +159,58 @@
       document.documentElement.style.removeProperty('font-size');
       change('#language', 'en');
     }
-    report.textContent = 'PASS: day selection, hourly scrolling, partial days, stable geometry, localization and dialog focus';
+    const status = app.querySelector('.forecast-status');
+    const settingsNote = app.querySelector('#forecast-updated');
+    const statusMessage = app.querySelector('#forecast-message');
+    const hero = app.querySelector('.hero');
+    const currentScroll = scroller.scrollLeft;
+    const beforeRefresh = geometry();
+    const refreshAge = 15 * 60_000;
+    assert(status.hidden && status.getBoundingClientRect().height === 0, 'Online notice leaves space above the forecast');
+    advance(refreshAge - 1);
+    await nextFrame();
+    assert(forecastRequests === requests, 'Forecast refreshed before 15 minutes');
+    advance(1);
+    await nextFrame();
+    assert(forecastRequests === requests + 1, 'Open tab did not refresh at 15 minutes');
+    assert(status.hidden && !statusMessage.textContent, 'Normal refresh displayed an online notice');
+    assert(app.querySelector('.hero') === hero && app.querySelector('.hour-scroll') === scroller &&
+      selected.getAttribute('aria-pressed') === 'true' && scroller.scrollLeft === currentScroll &&
+      beforeRefresh === geometry(), 'Automatic refresh disturbed the selected day, layout, or timeline');
+
+    hidden = true;
+    document.dispatchEvent(new Event('visibilitychange'));
+    advance(refreshAge);
+    await nextFrame();
+    assert(forecastRequests === requests + 1, 'Hidden tab fetched weather');
+    forecastFailure = true;
+    hidden = false;
+    document.dispatchEvent(new Event('visibilitychange'));
+    await nextFrame();
+    assert(forecastRequests === requests + 2, 'Foreground return did not refresh an old forecast');
+    assert(status.hidden && !statusMessage.textContent && settingsNote.textContent.includes('503') &&
+      !hero.hidden && app.querySelector('.hero-value').textContent === temperature,
+      'Failed refresh disturbed cached weather or showed a warning outside Settings');
+    document.dispatchEvent(new Event('visibilitychange'));
+    await nextFrame();
+    assert(forecastRequests === requests + 2, 'Foreground events retried the failure immediately');
+
+    online = false;
+    window.dispatchEvent(new Event('offline'));
+    const offlineMessage = statusMessage.textContent;
+    assert(!status.hidden && /offline.*previous forecast.*updated/i.test(offlineMessage) && !hero.hidden,
+      'Offline view is missing the localized cached-weather notice or update time');
+    advance(refreshAge);
+    await nextFrame();
+    assert(forecastRequests === requests + 2 && statusMessage.textContent === offlineMessage,
+      'Offline tab retried or changed its notice');
+    forecastFailure = false;
+    online = true;
+    window.dispatchEvent(new Event('online'));
+    await nextFrame();
+    assert(forecastRequests === requests + 3 && status.hidden && !settingsNote.textContent.includes('503'),
+      'Reconnect did not refresh or clear the offline state');
+    report.textContent = 'PASS: day selection, stable geometry, localization, timed refresh, foreground return and offline recovery';
     report.dataset.status = 'passed';
   } catch (error) {
     report.textContent = `FAIL: ${error.message}`;

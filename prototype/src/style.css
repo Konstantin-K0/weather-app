@@ -114,7 +114,6 @@ dialog .section-heading h2 { min-width: 0; overflow-wrap: anywhere; }
 
 [hidden] { display: none !important; }
 .forecast-status {
-  min-height: 52px;
   display: flex;
   align-items: center;
   justify-content: space-between;

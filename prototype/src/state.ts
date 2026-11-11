@@ -1,6 +1,6 @@
 import { AppError } from './errors.ts';
 import { requestForecast } from './api.ts';
-import { expiryAge, forecastRecord, forecastStore, isFresh, maxForecasts, validRecord, type ForecastRecord, type ForecastStore } from './forecast-cache.ts';
+import { expiryAge, forecastRecord, forecastStore, isFresh, maxForecasts, refreshAge, validRecord, type ForecastRecord, type ForecastStore } from './forecast-cache.ts';
 import { deviceCity, deviceLocation } from './geolocation.ts';
 import { defaultLocation, loadLocations, removeSaved, saveLocations, selectSaved, type Location } from './locations.ts';
 import { normalizeForecast } from './normalize.ts';
@@ -16,6 +16,7 @@ export function weatherState(render: () => void, store: ForecastStore = forecast
   let naming: AbortController | undefined;
   let locating = false;
   let error: AppError | null = null;
+  let lastFailure = 0;
   let storageAvailable = true;
   const cache = new Map<string, Snapshot>();
   function syncSaved(): void {
@@ -72,6 +73,13 @@ export function weatherState(render: () => void, store: ForecastStore = forecast
     active = undefined;
     locating = false;
     recoverWhenIdle = false;
+    lastFailure = 0;
+  }
+
+  const nextRefreshAt = () => Math.max(snapshotFor(location.id)?.updated ?? 0, lastFailure) + refreshAge;
+
+  async function refreshIfDue(useDevice = false): Promise<void> {
+    if (navigator.onLine && Date.now() >= nextRefreshAt()) await update(false, useDevice);
   }
 
   async function update(force = true, useDevice = true): Promise<void> {
@@ -120,10 +128,14 @@ export function weatherState(render: () => void, store: ForecastStore = forecast
       const forecast = normalizeForecast(payload, updated / 1000);
       const record = forecastRecord(city.id, forecast, updated);
       keep(record, false);
+      lastFailure = 0;
       // Let the successful weather display while the disk transaction completes.
       void store.write(record);
     } catch (reason) {
-      if (!request.signal.aborted) error = reason instanceof AppError ? reason : new AppError('forecastFailed');
+      if (!request.signal.aborted) {
+        error = reason instanceof AppError ? reason : new AppError('forecastFailed');
+        if (navigator.onLine && error.code !== 'offline') lastFailure = Date.now();
+      }
     } finally {
       if (active === request) {
         active = undefined;
@@ -178,7 +190,8 @@ export function weatherState(render: () => void, store: ForecastStore = forecast
 
   function reconnect(): void {
     if (active) recoverWhenIdle = true;
-    else void update(false);
+    else if (error?.code === 'offline') void update(false);
+    else void refreshIfDue(true);
   }
 
   return {
@@ -188,7 +201,8 @@ export function weatherState(render: () => void, store: ForecastStore = forecast
     get loading() { return !!active; },
     get locating() { return locating; },
     get error() { return error; },
+    get nextRefreshAt() { return nextRefreshAt(); },
     get storageAvailable() { return storageAvailable; },
-    choose, chooseDevice, remove, update, reconnect
+    choose, chooseDevice, remove, update, refreshIfDue, reconnect
   };
 }

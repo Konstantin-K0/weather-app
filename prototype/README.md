@@ -54,10 +54,10 @@ prompt when available and instructions for adding the app to an iPhone or iPad
 home screen. Phone installation requires a secure origin such as HTTPS.
 
 Use the browser's offline mode and reload after the first successful online visit.
-The app should display the saved forecast and its update time. Select another day,
-open Settings, and use Retry while offline. Re-enable the network to refresh an
-outdated forecast. If a city has no saved forecast, the app shows a localized
-offline message and keeps saved cities and Settings accessible.
+The app should display the saved forecast and its update time. Select another day
+or open Settings while offline. Re-enable the network to refresh an outdated
+forecast. If a city has no saved forecast, the app shows a localized offline
+message and keeps saved cities and Settings accessible.
 
 ### Offline storage and updates
 
@@ -72,10 +72,11 @@ offline message and keeps saved cities and Settings accessible.
   and schema version. A successful read displays the saved data before fetching.
   The cache retains up to 12 entries for seven days. Invalid entries are ignored
   and pruned on write. A failed refresh preserves the last valid forecast.
-- The app checks freshness on open, foreground resume, reconnect and manual
-  refresh. An open tab labels the forecast as previous after 15 minutes or the
-  city's local midnight, whichever comes first. The label updates without a
-  network request. Manual refresh can run sooner.
+- A visible, online tab refreshes about every 15 minutes and checks for an
+  overdue refresh when it returns to the foreground. A failed request keeps
+  the current forecast on screen, records the error in Settings and delays
+  the next automatic attempt by 15 minutes. Reloading or selecting **Update
+  forecast** in Settings can refresh sooner.
 - The geometric sun and cloud SVGs live in `public/icons/`. The manifest lists
   192px and 512px PNGs and a separate full-bleed 512px maskable PNG. Safari has a
   180px Apple touch icon. The manifest uses standalone display mode.
