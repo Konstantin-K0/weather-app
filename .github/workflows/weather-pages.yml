@@ -17,6 +17,7 @@ on:
 permissions: {}
 
 env:
+  V2_REVISION: 2dd606fb5ce3122ba52d794b909e2398057f1d57
   LEGACY_REVISION: 65cd849fa296759fcf41cccad897d55f318a863f
 
 jobs:
@@ -26,9 +27,10 @@ jobs:
     permissions:
       contents: read
     steps:
-      - name: Check out the selected revision
+      - name: Check out release or rollback support
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
+          ref: ${{ inputs.target == 'v2' && env.V2_REVISION || github.sha }}
           persist-credentials: false
       - name: Set up Node.js
         if: inputs.target == 'v2'
@@ -40,6 +42,7 @@ jobs:
         if: inputs.target == 'v2'
         working-directory: prototype
         run: |
+          test "$(git rev-parse HEAD)" = "$V2_REVISION"
           npm ci
           npm test
           npm run build:pages
